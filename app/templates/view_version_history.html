@@ -1,0 +1,143 @@
+{% extends 'layouts.html' %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='my_files.css') }}">
+
+<main class="main-content p-4">
+    <!-- Header Section -->
+    <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4">
+        <h1 class="fw-bold mb-3 mb-lg-0">Water Analysis Report Version History</h1>
+        {% if user %}
+            <div class="user-info-card">
+                <div class="user-details">
+                    <p class="user-fname">{{ user.first_name | default(user.fname, '') }}</p>
+                    <p class="user-lname">{{ user.last_name | default(user.lnname, '') }}</p>
+                    <p class="user-role">{{ user.role | capitalize }}</p>
+                </div>
+                <div class="user-profession">
+                    <p class="user-profession-text">{{ user.profession | default('') }}</p>
+                </div>
+            </div>
+        {% endif %}
+    </header>
+
+    <!-- Version History -->
+    <section class="version-history mb-4">
+        <h2 class="mb-3">Version History for Worksheet: {{ worksheet.lab_number | default('Untitled') }} (ID: {{ worksheet._id }})</h2>
+        
+        <div class="alert alert-info mb-4">
+            <p><strong>Current Version Details:</strong></p>
+            <p>Created by: {{ worksheet.created_by | default('Unknown') }}</p>
+            <p>Created at: {{ worksheet.created_at.strftime('%Y-%m-%d %H:%M:%S') if worksheet.created_at else 'Unknown' }}</p>
+            <p>Last edited at: {{ worksheet.edited_at.strftime('%Y-%m-%d %H:%M:%S') if worksheet.edited_at else 'Never edited' }}</p>
+        </div>
+        
+        {% if versions %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Version #</th>
+                        <th>Saved At</th>
+                        <th>Created By</th>
+                        <th>Original Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for version in versions %}
+                    <tr>
+                        <td>{{ version.version_number }}</td>
+                        <td>
+                            {% if version.version_saved_at is string %}
+                                {{ version.version_saved_at }}
+                            {% else %}
+                                {{ version.version_saved_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                            {% endif %}
+                        </td>
+                        <td>{{ version.version_created_by | default('Unknown') }}</td>
+                        <td>
+                            {% if version.version_data.created_at is string %}
+                                {{ version.version_data.created_at }}
+                            {% else %}
+                                {{ version.version_data.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-primary view-version-btn" 
+                                    data-version-id="{{ version._id }}"
+                                    data-version-number="{{ version.version_number }}">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-warning" role="alert">
+            No version history available for this worksheet. This could be because:
+            <ul>
+                <li>The worksheet has never been edited</li>
+                <li>Version history is disabled</li>
+                <li>There was an error saving version history</li>
+            </ul>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Actions -->
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('my_files.files') }}" class="btn btn-secondary">Back to My Files</a>
+        <a href="{{ url_for('water_analysis.view_water_analysis', id=worksheet._id) }}" class="btn btn-primary">View Current Version</a>
+    </div>
+</main>
+
+<!-- Modal for viewing versions -->
+<div class="modal fade" id="versionModal" tabindex="-1" aria-labelledby="versionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="versionModalLabel">Version Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="versionModalBody">
+                <!-- Content will be loaded via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Handle view version button clicks
+    $('.view-version-btn').click(function() {
+        const versionId = $(this).data('version-id');
+        const versionNumber = $(this).data('version-number');
+        
+        $('#versionModalLabel').text(`Version ${versionNumber} Details`);
+        
+        // Load version data via AJAX
+        $.ajax({
+            url: `/view_water_analysis/${versionId}`,
+            method: 'GET',
+            success: function(response) {
+                $('#versionModalBody').html(response);
+                $('#versionModal').modal('show');
+            },
+            error: function(xhr, status, error) {
+                $('#versionModalBody').html(`
+                    <div class="alert alert-danger">
+                        Error loading version details: ${error}
+                    </div>
+                `);
+                $('#versionModal').modal('show');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

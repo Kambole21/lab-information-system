@@ -1,0 +1,235 @@
+/* Background */
+body {
+    background-color: #f5f6fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+}
+
+/* Sidebar Base (if applicable) */
+#sidebar {
+    width: 240px;
+    min-height: 100vh;
+    position: fixed;
+    z-index: 1030;
+    transition: transform 0.3s ease-in-out;
+}
+
+#wrapper #page-content {
+    margin-left: 240px;
+    transition: margin 0.3s ease-in-out;
+}
+
+@media (max-width: 768px) {
+    #sidebar {
+        transform: translateX(-100%);
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+    }
+
+    #sidebar.show {
+        transform: translateX(0);
+    }
+
+    #wrapper #page-content {
+        margin-left: 0;
+    }
+}
+
+/* Horizontal Profile Card Styling */
+.profile-card-horizontal {
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: none;
+    display: flex; /* Use flexbox for horizontal arrangement within the card body */
+    flex-direction: row; /* Default is row */
+}
+
+.profile-card-horizontal .card-body {
+    padding: 0; /* Remove default card-body padding as content is in rows/cols */
+}
+
+/* Profile Picture in Horizontal Layout */
+.profile-picture-horizontal {
+    width: 120px; /* Smaller for horizontal layout */
+    height: 120px;
+    border-radius: 50% !important;
+    border: 4px solid #4caf50;
+    object-fit: cover;
+    margin: 0 auto 1rem auto; /* Center and add margin */
+    display: block; /* Ensure it takes up full width for centering */
+}
+
+/* Name and Username in Horizontal Layout */
+.profile-name-horizontal {
+    color: #212529;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.profile-username {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+/* Information Layers */
+.info-layer {
+    padding: 1rem 0;
+}
+
+.info-layer:last-child {
+    border-bottom: none; /* No border for the last layer */
+    padding-bottom: 0;
+}
+
+.profile-section-title {
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.profile-section-title i {
+    color: #4caf50;
+    font-size: 1.2rem;
+    margin-right: 0.75rem;
+}
+
+.profile-detail {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 0.5rem !important; /* Adjusted for better spacing within layers */
+    padding-left: 0 !important; /* Remove default Bootstrap padding */
+}
+
+/* Role Badge */
+.profile-role-badge {
+    font-size: 0.85rem;
+    padding: 0.4em 0.7em;
+    border-radius: 0.4rem;
+}
+
+/* Edit Icon */
+.edit-icon {
+    color: #007bff;
+    font-size: 1.1rem;
+    transition: color 0.2s ease-in-out;
+}
+
+.edit-icon:hover {
+    color: #0056b3;
+}
+
+/* Buttons */
+.profile-edit-btn {
+    background-color: #4caf50;
+    border-color: #388e3c;
+    padding: 0.7rem 1.4rem;
+    font-size: 1rem;
+    border-radius: 0.4rem;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.profile-edit-btn:hover {
+    background-color: #388e3c;
+    border-color: #2e7d32;
+    transform: translateY(-1px);
+}
+
+/* Responsive Adjustments for Horizontal Layout */
+@media (max-width: 767.98px) {
+    .profile-card-horizontal {
+        flex-direction: column; /* Stack columns vertically on small screens */
+        padding: 1.5rem;
+    }
+
+    .profile-card-horizontal .col-md-4,
+    .profile-card-horizontal .col-md-8 {
+        border-right: none !important; /* Remove vertical border */
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important; /* Add horizontal border */
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-card-horizontal .col-md-8 {
+        padding-top: 0;
+        margin-top: 0;
+    }
+
+    .profile-card-horizontal .col-md-4:last-child {
+        border-bottom: none !important;
+        margin-bottom: 0;
+    }
+
+    .profile-picture-horizontal {
+        width: 100px;
+        height: 100px;
+    }
+
+    .profile-name-horizontal {
+        font-size: 1.3rem;
+    }
+
+    .profile-username {
+        font-size: 0.85rem;
+    }
+
+    .profile-section-title {
+        font-size: 1rem;
+        justify-content: center; /* Center titles on small screens */
+    }
+
+    .profile-detail {
+        text-align: center; /* Center details on smaller screens */
+        padding-left: 0 !important;
+    }
+
+    .profile-edit-btn {
+        width: 100%;
+    }
+}
+
+/* General card and table styles (from original CSS) */
+.card {
+    border-radius: 10px;
+}
+
+.table {
+    background-color: white;
+    border-radius: 6px;
+}
+
+.table th,
+.table td {
+    vertical-align: middle;
+}
+
+.bg-danger {
+    background-color: rgb(234 174 180) !important;
+    color: #fb2300;
+}
+
+.bg-secondary {
+    background-color: rgb(180 182 184) !important;
+    color: #565555;
+}
+
+.bg-success {
+    background-color: rgb(188 241 209) !important;
+    color: #2fbc77;
+}
+
+/* Existing button styles (adjusted for consistency) */
+.btn-primary {
+    background-color: #4caf50;
+    border-color: #388e3c;
+}
+
+.btn-primary:hover {
+    background-color: #388e3c;
+    border-color: #2e7d32;
+}

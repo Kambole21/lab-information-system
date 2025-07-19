@@ -1,0 +1,528 @@
+{% extends 'layouts.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='submit.css') }}">
+    <style>
+        .modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal.show {
+            opacity: 1;
+            display: flex;
+        }
+        .modal.hidden {
+            opacity: 0;
+            display: none;
+        }
+        .dropdown-menu {
+            display: none;
+            min-width: 120px;
+            z-index: 10;
+        }
+        .dropdown-menu.show {
+            display: block;
+        }
+        .comment-column {
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            max-width: 200px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <main class="container mx-auto p-4 max-w-7xl">
+        <!-- Header Section -->
+        <header class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Submitted Worksheets</h1>
+        </header>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border {{ 'border-green-400 text-green-700' if category == 'success' else 'border-red-400 text-red-700' }} px-4 py-3 rounded relative mb-4" role="alert">
+                        {{ message }}
+                        <button type="button" class="absolute top-0 right-0 px-4 py-3" onclick="this.parentElement.style.display='none'">
+                            <span class="text-{{ 'green' if category == 'success' else 'red' }}-700">×</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Filter Form -->
+        <form method="POST" action="{{ url_for('submit.submit') }}" class="mb-6 bg-white rounded-lg shadow-md p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-800">Worksheet Title</label>
+                    <select class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" id="title" name="title">
+                        <option value="">All</option>
+                        {% for title in collection_titles %}
+                            <option value="{{ title }}" {% if title == filter_title %}selected{% endif %}>{{ title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="created_by" class="block text-sm font-medium text-gray-800">Created By</label>
+                    <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" id="created_by" name="created_by" value="{{ filter_creator }}">
+                </div>
+                <div>
+                    <label for="date" class="block text-sm font-medium text-gray-800">Date</label>
+                    <input type="date" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" id="date" name="date" value="{{ filter_date }}">
+                </div>
+            </div>
+            <div class="flex justify-end mt-4">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Filter</button>
+            </div>
+        </form>
+
+        <!-- Worksheets Table -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Worksheets</h2>
+            {% if worksheets %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-600">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 font-medium text-gray-800">Title</th>
+                            <th class="px-4 py-3 font-medium text-gray-800">Created By</th>
+                            <th class="px-4 py-3 font-medium text-gray-800">Date</th>
+                            <th class="px-4 py-3 font-medium text-gray-800">Edited At</th>
+                            <th class="px-4 py-3 font-medium text-gray-800">Comment</th>
+                            <th class="px-4 py-3 font-medium text-gray-800">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for worksheet in worksheets %}
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-3">{{ worksheet.title }}</td>
+                            <td class="px-4 py-3">{{ worksheet.created_by }}</td>
+                            <td class="px-4 py-3">{{ worksheet.date }}</td>
+                            <td class="px-4 py-3">{{ worksheet.edited_at or 'Not Edited' }}</td>
+                            <td class="px-4 py-3 comment-column">{{ worksheet.comment }}</td>
+                            <td class="px-4 py-3 relative">
+                                <button class="text-gray-600 hover:text-gray-800 focus:outline-none" onclick="toggleDropdown('dropdown-{{ worksheet.id }}')">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <div id="dropdown-{{ worksheet.id }}" class="dropdown-menu absolute right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
+                                    {% if worksheet.title == 'Water Analysis Report' %}
+                                        <a href="{{ url_for('water_analysis.view_water_analysis', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('water_analysis.edit_water_analysis', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% elif worksheet.title == 'Equipment Operation Log Book' %}
+                                        <a href="{{ url_for('equipment.view_equipment_log', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('equipment.equipment', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% elif worksheet.title == 'Trace Worksheet Form' %}
+                                        <a href="{{ url_for('trace.view_trace_worksheet', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('trace.trace', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% elif worksheet.title == 'Water Analysis Worksheet' %}
+                                        <a href="{{ url_for('submit.view_water_worksheet', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('submit.edit_worksheet', id=worksheet.id, collection=worksheet.title) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% elif worksheet.title == 'Organic Carbon & Nitrogen Worksheet' %}
+                                        <a href="{{ url_for('submit.view_ocn', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('submit.edit_worksheet', id=worksheet.id, collection=worksheet.title) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% elif worksheet.title == 'pH, Phosphorus, Bases & Traces Worksheet' %}
+                                        <a href="{{ url_for('submit.view_ph', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('submit.edit_worksheet', id=worksheet.id, collection=worksheet.title) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% elif worksheet.title == 'Soil Analysis Report Form' %}
+                                        <a href="{{ url_for('submit.view_soil_analysis', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('submit.edit_worksheet', id=worksheet.id, collection=worksheet.title) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% else %}
+                                        <a href="{{ url_for('submit.view_worksheet', id=worksheet.id, collection=worksheet.title) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('submit.edit_worksheet', id=worksheet.id, collection=worksheet.title) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% endif %}
+                                    <button onclick="showDeleteModal('{{ worksheet.id }}', '{{ worksheet.title }}', '{{ worksheet.title }}')" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-gray-600">No worksheets found.</p>
+            {% endif %}
+        </section>
+
+        <!-- Worksheet Modal -->
+        <div id="worksheetModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Worksheet Details</h3>
+                    <button type="button" class="text-gray-600 hover:text-gray-800" onclick="hideWorksheetModal()">
+                        <span>×</span>
+                    </button>
+                </div>
+                <form id="editForm">
+                    <input type="hidden" id="worksheetId" name="id">
+                    <input type="hidden" id="worksheetCollection" name="collection">
+                    <div class="mb-4">
+                        <label for="modalTitle" class="block text-sm font-medium text-gray-800">Title</label>
+                        <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md" id="modalTitle" readonly>
+                    </div>
+                    <div class="mb-4" id="modalLabNumberContainer">
+                        <label for="modalLabNumber" class="block text-sm font-medium text-gray-800">Lab Number</label>
+                        <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" id="modalLabNumber" name="lab_number">
+                    </div>
+                    <div class="mb-4" id="modalFarmLocationContainer" style="display: none;">
+                        <label for="modalFarmLocation" class="block text-sm font-medium text-gray-800">Farm Location</label>
+                        <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" id="modalFarmLocation" name="farm_location">
+                    </div>
+                    <div class="mb-4" id="modalDateReceivedContainer" style="display: none;">
+                        <label for="modalDateReceived" class="block text-sm font-medium text-gray-800">Date Received</label>
+                        <input type="date" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" id="modalDateReceived" name="date_received">
+                    </div>
+                    <div class="mb-4" id="modalDateReportedContainer" style="display: none;">
+                        <label for="modalDateReported" class="block text-sm font-medium text-gray-800">Date Reported</label>
+                        <input type="date" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" id="modalDateReported" name="date_reported">
+                    </div>
+                    <div class="mb-4" id="modalEquipmentNameContainer" style="display: none;">
+                        <label for="modalEquipmentName" class="block text-sm font-medium text-gray-800">Equipment Name</label>
+                        <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md" id="modalEquipmentName" readonly>
+                    </div>
+                    <div class="mb-4" id="modalLocationContainer" style="display: none;">
+                        <label for="modalLocation" class="block text-sm font-medium text-gray-800">Location</label>
+                        <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md" id="modalLocation" readonly>
+                    </div>
+                    <div class="mb-4" id="modalAnalyzedByContainer">
+                        <label for="modalAnalyzedBy" class="block text-sm font-medium text-gray-800">Analyzed By</label>
+                        <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" id="modalAnalyzedBy" name="analyzed_by">
+                    </div>
+                    <div class="mb-4" id="modalAnalyzedByDateContainer">
+                        <label for="modalAnalyzedByDate" class="block text-sm font-medium text-gray-800">Analyzed By Date</label>
+                        <input type="date" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" id="modalAnalyzedByDate" name="analyzed_by_date">
+                    </div>
+                    <div class="mb-4" id="modalCheckedByContainer">
+                        <label for="modalCheckedBy" class="block text-sm font-medium text-gray-800">Checked By</label>
+                        <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" id="modalCheckedBy" name="checked_by">
+                    </div>
+                    <div class="mb-4" id="modalCheckedByDateContainer">
+                        <label for="modalCheckedByDate" class="block text-sm font-medium text-gray-800">Checked By Date</label>
+                        <input type="date" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" id="modalCheckedByDate" name="checked_by_date">
+                    </div>
+                    <div class="mb-4">
+                        <label for="modalDate" class="block text-sm font-medium text-gray-800">Date</label>
+                        <input type="date" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" id="modalDate" name="date">
+                    </div>
+                    <div class="mb-4">
+                        <label for="modalEditedAt" class="block text-sm font-medium text-gray-800">Last Edited</label>
+                        <input type="text" class="w-full mt-1 p-2 border border-gray-300 rounded-md" id="modalEditedAt" readonly>
+                    </div>
+                    <div class="mb-4">
+                        <label for="modalComment" class="block text-sm font-medium text-gray-800">Comment</label>
+                        <textarea class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 resize-y min-h-[100px]" id="modalComment" name="comment"></textarea>
+                    </div>
+                    <div id="modalSamples" class="mb-4"></div>
+                    <div class="flex justify-end space-x-3">
+                        <a id="fullEditBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Full Edit</a>
+                        <button type="button" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition" onclick="hideWorksheetModal()">Close</button>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Confirm Deletion</h3>
+                <p class="text-gray-600 mb-6">Are you sure you want to delete "<span id="worksheetTitle"></span>"? This action cannot be undone.</p>
+                <div class="flex justify-end space-x-3">
+                    <button id="cancelDelete" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition">Cancel</button>
+                    <button id="confirmDelete" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">Delete</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            const isShown = dropdown.classList.contains('show');
+            document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.remove('show'));
+            if (!isShown) {
+                dropdown.classList.add('show');
+            }
+            document.addEventListener('click', function closeDropdown(event) {
+                if (!dropdown.contains(event.target) && !event.target.closest('button')) {
+                    dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+
+        function showWorksheetModal(data, id, collection) {
+            document.getElementById('modalTitle').value = data.title;
+            document.getElementById('modalLabNumber').value = data.lab_number || '';
+            document.getElementById('modalFarmLocation').value = data.farm_location || '';
+            document.getElementById('modalDateReceived').value = data.date_received || '';
+            document.getElementById('modalDateReported').value = data.date_reported || '';
+            document.getElementById('modalEquipmentName').value = data.equipment_name || '';
+            document.getElementById('modalLocation').value = data.location || '';
+            document.getElementById('modalAnalyzedBy').value = data.analyzed_by && data.analyzed_by[0] ? data.analyzed_by[0].name || '' : data.analyzed_by || '';
+            document.getElementById('modalAnalyzedByDate').value = data.analyzed_by && data.analyzed_by[0] ? data.analyzed_by[0].date || '' : data.analyzed_by_date || '';
+            document.getElementById('modalCheckedBy').value = data.checked_by && data.checked_by[0] ? data.checked_by[0].name || '' : data.checked_by || '';
+            document.getElementById('modalCheckedByDate').value = data.checked_by && data.checked_by[0] ? data.checked_by[0].date || '' : data.checked_by_date || '';
+            document.getElementById('modalDate').value = data.date || '';
+            document.getElementById('modalEditedAt').value = data.edited_at || 'Not Edited';
+            document.getElementById('modalComment').value = data.comment || '';
+
+            const labNumberContainer = document.getElementById('modalLabNumberContainer');
+            const farmLocationContainer = document.getElementById('modalFarmLocationContainer');
+            const dateReceivedContainer = document.getElementById('modalDateReceivedContainer');
+            const dateReportedContainer = document.getElementById('modalDateReportedContainer');
+            const equipmentNameContainer = document.getElementById('modalEquipmentNameContainer');
+            const locationContainer = document.getElementById('modalLocationContainer');
+            const analyzedByContainer = document.getElementById('modalAnalyzedByContainer');
+            const analyzedByDateContainer = document.getElementById('modalAnalyzedByDateContainer');
+            const checkedByContainer = document.getElementById('modalCheckedByContainer');
+            const checkedByDateContainer = document.getElementById('modalCheckedByDateContainer');
+            const dateContainer = document.getElementById('modalDate');
+
+            let samplesHtml = '';
+            if (data.title === 'Equipment Operation Log Book') {
+                equipmentNameContainer.style.display = 'block';
+                locationContainer.style.display = 'block';
+                labNumberContainer.style.display = 'none';
+                farmLocationContainer.style.display = 'none';
+                dateReceivedContainer.style.display = 'none';
+                dateReportedContainer.style.display = 'none';
+                analyzedByContainer.style.display = 'none';
+                analyzedByDateContainer.style.display = 'none';
+                checkedByContainer.style.display = 'none';
+                checkedByDateContainer.style.display = 'none';
+                dateContainer.style.display = 'none';
+                samplesHtml = '<h6 class="text-sm font-semibold text-gray-800">Log Entries</h6><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-600"><thead class="bg-gray-50"><tr><th class="px-4 py-2">S/N</th><th class="px-4 py-2">Date</th><th class="px-4 py-2">Operator</th><th class="px-4 py-2">Analysis Done</th><th class="px-4 py-2">No. of Samples</th><th class="px-4 py-2">Instrument Performance</th></tr></thead><tbody>';
+                data.log_entries.forEach(entry => {
+                    samplesHtml += `<tr class="border-b"><td class="px-4 py-2">${entry.serial_number}</td><td class="px-4 py-2">${entry.date}</td><td class="px-4 py-2">${entry.operator}</td><td class="px-4 py-2">${entry.analysis_done}</td><td class="px-4 py-2">${entry.no_of_samples}</td><td class="px-4 py-2">${entry.instrument_performance}</td></tr>`;
+                });
+                samplesHtml += '</tbody></table></div>';
+            } else if (data.title === 'Water Analysis Worksheet') {
+                labNumberContainer.style.display = 'none';
+                farmLocationContainer.style.display = 'none';
+                dateReceivedContainer.style.display = 'none';
+                dateReportedContainer.style.display = 'none';
+                equipmentNameContainer.style.display = 'none';
+                locationContainer.style.display = 'none';
+                analyzedByContainer.style.display = 'block';
+                analyzedByDateContainer.style.display = 'none';
+                checkedByContainer.style.display = 'block';
+                checkedByDateContainer.style.display = 'block';
+                dateContainer.style.display = 'block';
+                samplesHtml = '<h6 class="text-sm font-semibold text-gray-800">Samples</h6><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-600"><thead class="bg-gray-50"><tr><th class="px-4 py-2">S/N</th><th class="px-4 py-2">Lab No.</th><th class="px-4 py-2">pH</th><th class="px-4 py-2">EC (µS/cm)</th><th class="px-4 py-2">TDS (ppm)</th><th class="px-4 py-2">Resistivity</th><th class="px-4 py-2">Salinity (%)</th><th class="px-4 py-2">CO₃²⁻ (mg/l)</th><th class="px-4 py-2">HCO₃⁻ (mg/l)</th><th class="px-4 py-2">Cl⁻ (mg/l)</th><th class="px-4 py-2">SO₄²⁻ (mg/l)</th><th class="px-4 py-2">K⁺ (mg/l)</th><th class="px-4 py-2">Ca²⁺ (mg/l)</th><th class="px-4 py-2">Mg²⁺ (mg/l)</th><th class="px-4 py-2">Na⁺ (mg/l)</th><th class="px-4 py-2">Cu²⁺ (mg/l)</th><th class="px-4 py-2">Mn²⁺ (mg/l)</th><th class="px-4 py-2">Fe²⁺ (mg/l)</th><th class="px-4 py-2">Zn²⁺ (mg/l)</th></tr></thead><tbody>';
+                data.samples.forEach((sample, index) => {
+                    samplesHtml += `<tr class="border-b"><td class="px-4 py-2">${sample.sample_number}</td><td class="px-4 py-2"><input type="text" name="labno${index + 1}" value="${sample.lab_no}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td>`;
+                    ['ph', 'ec', 'tds', 'resistivity', 'salinity', 'co3', 'hco3', 'cl', 'so4', 'k', 'ca', 'mg', 'na', 'cu', 'mn', 'fe', 'zn'].forEach(field => {
+                        samplesHtml += `<td class="px-4 py-2"><input type="number" step="0.01" name="${field}_sample${index + 1}" value="${sample[field]}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td>`;
+                    });
+                    samplesHtml += '</tr>';
+                });
+                samplesHtml += '</tbody></table></div>';
+            } else if (data.title === 'Organic Carbon & Nitrogen Worksheet') {
+                labNumberContainer.style.display = 'block';
+                farmLocationContainer.style.display = 'none';
+                dateReceivedContainer.style.display = 'none';
+                dateReportedContainer.style.display = 'none';
+                equipmentNameContainer.style.display = 'none';
+                locationContainer.style.display = 'none';
+                analyzedByContainer.style.display = 'block';
+                analyzedByDateContainer.style.display = 'block';
+                checkedByContainer.style.display = 'block';
+                checkedByDateContainer.style.display = 'block';
+                dateContainer.style.display = 'block';
+                samplesHtml = '<h6 class="text-sm font-semibold text-gray-800">Left Table</h6><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-600"><thead class="bg-gray-50"><tr><th class="px-4 py-2">S/N</th><th class="px-4 py-2">Lab No.</th><th class="px-4 py-2">Initial Volume (ml)</th><th class="px-4 py-2">Titre Volume (ml)</th><th class="px-4 py-2">Final Volume (ml)</th></tr></thead><tbody>';
+                data.left_table.forEach((row, index) => {
+                    samplesHtml += `<tr class="border-b"><td class="px-4 py-2">${row.serial_number}</td><td class="px-4 py-2"><input type="text" name="left_lab_no${index + 1}" value="${row.lab_no}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="left_ini_vol${index + 1}" value="${row.ini_vol}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="left_titre_vol${index + 1}" value="${row.titre_vol}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="left_final_vol${index + 1}" value="${row.final_vol}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td></tr>`;
+                });
+                samplesHtml += '</tbody></table></div><h6 class="text-sm font-semibold text-gray-800">Right Table</h6><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-600"><thead class="bg-gray-50"><tr><th class="px-4 py-2">S/N</th><th class="px-4 py-2">Lab No.</th><th class="px-4 py-2">Initial Volume (ml)</th><th class="px-4 py-2">Titre Volume (ml)</th><th class="px-4 py-2">Final Volume (ml)</th></tr></thead><tbody>';
+                data.right_table.forEach((row, index) => {
+                    samplesHtml += `<tr class="border-b"><td class="px-4 py-2">${row.serial_number}</td><td class="px-4 py-2"><input type="text" name="right_lab_no${index + 1}" value="${row.lab_no}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="right_ini_vol${index + 1}" value="${row.ini_vol}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="right_titre_vol${index + 1}" value="${row.titre_vol}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="right_final_vol${index + 1}" value="${row.final_vol}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td></tr>`;
+                });
+                samplesHtml += '</tbody></table></div>';
+            } else if (data.title === 'pH, Phosphorus, Bases & Traces Worksheet') {
+                labNumberContainer.style.display = 'block';
+                farmLocationContainer.style.display = 'none';
+                dateReceivedContainer.style.display = 'none';
+                dateReportedContainer.style.display = 'none';
+                equipmentNameContainer.style.display = 'none';
+                locationContainer.style.display = 'none';
+                analyzedByContainer.style.display = 'block';
+                analyzedByDateContainer.style.display = 'block';
+                checkedByContainer.style.display = 'block';
+                checkedByDateContainer.style.display = 'block';
+                dateContainer.style.display = 'block';
+                samplesHtml = '<h6 class="text-sm font-semibold text-gray-800">Calibration Table</h6><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-600"><thead class="bg-gray-50"><tr><th class="px-4 py-2">S/N</th><th class="px-4 py-2">P Std Conc</th><th class="px-4 py-2">P Abs Reading</th><th class="px-4 py-2">K Std Conc</th><th class="px-4 py-2">K Abs Reading</th><th class="px-4 py-2">Ca Std Conc</th><th class="px-4 py-2">Ca Abs Reading</th><th class="px-4 py-2">Mg Std Conc</th><th class="px-4 py-2">Mg Abs Reading</th><th class="px-4 py-2">Na Std Conc</th><th class="px-4 py-2">Na Abs Reading</th></tr></thead><tbody>';
+                data.calibration_table.forEach((row, index) => {
+                    samplesHtml += `<tr class="border-b"><td class="px-4 py-2">${row.serial_number}</td><td class="px-4 py-2"><input type="number" step="0.01" name="p_std_conc${index + 1}" value="${row.p_std_conc}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="p_abs_reading${index + 1}" value="${row.p_abs_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="k_std_conc${index + 1}" value="${row.k_std_conc}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="k_abs_reading${index + 1}" value="${row.k_abs_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="ca_std_conc${index + 1}" value="${row.ca_std_conc}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="ca_abs_reading${index + 1}" value="${row.ca_abs_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="mg_std_conc${index + 1}" value="${row.mg_std_conc}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="mg_abs_reading${index + 1}" value="${row.mg_abs_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="na_std_conc${index + 1}" value="${row.na_std_conc}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="na_abs_reading${index + 1}" value="${row.na_abs_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td></tr>`;
+                });
+                samplesHtml += '</tbody></table></div><h6 class="text-sm font-semibold text-gray-800">Analysis Table</h6><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-600"><thead class="bg-gray-50"><tr><th class="px-4 py-2">S/N</th><th class="px-4 py-2">Lab No.</th><th class="px-4 py-2">pH (CaCl₂)</th><th class="px-4 py-2">P Instrument Reading</th><th class="px-4 py-2">P D.F</th><th class="px-4 py-2">P mg/l</th><th class="px-4 py-2">K Instrument Reading</th><th class="px-4 py-2">K D.F</th><th class="px-4 py-2">K mg/l</th><th class="px-4 py-2">Ca Instrument Reading</th><th class="px-4 py-2">Ca D.F</th><th class="px-4 py-2">Ca mg/l</th><th class="px-4 py-2">Mg Instrument Reading</th><th class="px-4 py-2">Mg D.F</th><th class="px-4 py-2">Mg mg/l</th><th class="px-4 py-2">Na Instrument Reading</th><th class="px-4 py-2">Na D.F</th><th class="px-4 py-2">Na mg/l</th></tr></thead><tbody>';
+                data.analysis_table.forEach((row, index) => {
+                    samplesHtml += `<tr class="border-b"><td class="px-4 py-2">${row.serial_number}</td><td class="px-4 py-2"><input type="text" name="lab_no${index + 1}" value="${row.lab_no}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" min="0" max="14" name="ph_cacl2${index + 1}" value="${row.ph_cacl2}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="p_instrument_reading${index + 1}" value="${row.p_instrument_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="p_df${index + 1}" value="${row.p_df}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="p_mgl${index + 1}" value="${row.p_mgl}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="k_instrument_reading${index + 1}" value="${row.k_instrument_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="k_df${index + 1}" value="${row.k_df}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="k_mgl${index + 1}" value="${row.k_mgl}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="ca_instrument_reading${index + 1}" value="${row.ca_instrument_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="ca_df${index + 1}" value="${row.ca_df}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="ca_mgl${index + 1}" value="${row.ca_mgl}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="mg_instrument_reading${index + 1}" value="${row.mg_instrument_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="mg_df${index + 1}" value="${row.mg_df}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="mg_mgl${index + 1}" value="${row.mg_mgl}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="na_instrument_reading${index + 1}" value="${row.na_instrument_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="na_df${index + 1}" value="${row.na_df}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="na_mgl${index + 1}" value="${row.na_mgl}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td></tr>`;
+                });
+                samplesHtml += '</tbody></table></div>';
+            } else if (data.title === 'Trace Worksheet Form') {
+                labNumberContainer.style.display = 'block';
+                farmLocationContainer.style.display = 'none';
+                dateReceivedContainer.style.display = 'none';
+                dateReportedContainer.style.display = 'none';
+                equipmentNameContainer.style.display = 'none';
+                locationContainer.style.display = 'none';
+                analyzedByContainer.style.display = 'block';
+                analyzedByDateContainer.style.display = 'block';
+                checkedByContainer.style.display = 'block';
+                checkedByDateContainer.style.display = 'block';
+                dateContainer.style.display = 'block';
+                samplesHtml = '<h6 class="text-sm font-semibold text-gray-800">Standards</h6><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-600"><thead class="bg-gray-50"><tr><th class="px-4 py-2">S/N</th><th class="px-4 py-2">Cu Std Conc</th><th class="px-4 py-2">Cu Abs Reading</th><th class="px-4 py-2">Mn Std Conc</th><th class="px-4 py-2">Mn Abs Reading</th><th class="px-4 py-2">Fe Std Conc</th><th class="px-4 py-2">Fe Abs Reading</th><th class="px-4 py-2">Zn Std Conc</th><th class="px-4 py-2">Zn Abs Reading</th></tr></thead><tbody>';
+                data.standards.forEach((standard, index) => {
+                    samplesHtml += `<tr class="border-b"><td class="px-4 py-2">${standard.serial_number}</td><td class="px-4 py-2"><input type="number" step="0.01" name="cu_std_conc${index + 1}" value="${standard.copper.std_conc}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="cu_abs_reading${index + 1}" value="${standard.copper.abs_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="mn_std_conc${index + 1}" value="${standard.manganese.std_conc}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="mn_abs_reading${index + 1}" value="${standard.manganese.abs_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="fe_std_conc${index + 1}" value="${standard.iron.std_conc}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="fe_abs_reading${index + 1}" value="${standard.iron.abs_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="zn_std_conc${index + 1}" value="${standard.zinc.std_conc}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="zn_abs_reading${index + 1}" value="${standard.zinc.abs_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td></tr>`;
+                });
+                samplesHtml += '</tbody></table></div><h6 class="text-sm font-semibold text-gray-800">Samples</h6><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-600"><thead class="bg-gray-50"><tr><th class="px-4 py-2">S/N</th><th class="px-4 py-2">Lab No.</th><th class="px-4 py-2">Cu Instrument Reading</th><th class="px-4 py-2">Cu D.F</th><th class="px-4 py-2">Cu mg/l</th><th class="px-4 py-2">Mn Instrument Reading</th><th class="px-4 py-2">Mn D.F</th><th class="px-4 py-2">Mn mg/l</th><th class="px-4 py-2">Fe Instrument Reading</th><th class="px-4 py-2">Fe D.F</th><th class="px-4 py-2">Fe mg/l</th><th class="px-4 py-2">Zn Instrument Reading</th><th class="px-4 py-2">Zn D.F</th><th class="px-4 py-2">Zn mg/l</th></tr></thead><tbody>';
+                data.samples.forEach((sample, index) => {
+                    samplesHtml += `<tr class="border-b"><td class="px-4 py-2">${sample.serial_number}</td><td class="px-4 py-2"><input type="text" name="lab_no${index + 1}" value="${sample.lab_no}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="cu_instrument_reading${index + 1}" value="${sample.copper.instrument_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="cu_df${index + 1}" value="${sample.copper.df}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="cu_mg_l${index + 1}" value="${sample.copper.mg_l}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="mn_instrument_reading${index + 1}" value="${sample.manganese.instrument_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="mn_df${index + 1}" value="${sample.manganese.df}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="mn_mg_l${index + 1}" value="${sample.manganese.mg_l}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="fe_instrument_reading${index + 1}" value="${sample.iron.instrument_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="fe_df${index + 1}" value="${sample.iron.df}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="fe_mg_l${index + 1}" value="${sample.iron.mg_l}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="zn_instrument_reading${index + 1}" value="${sample.zinc.instrument_reading}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="zn_df${index + 1}" value="${sample.zinc.df}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="zn_mg_l${index + 1}" value="${sample.zinc.mg_l}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td></tr>`;
+                });
+                samplesHtml += '</tbody></table></div>';
+            } else if (data.title === 'Soil Analysis Report Form') {
+                labNumberContainer.style.display = 'block';
+                farmLocationContainer.style.display = 'block';
+                dateReceivedContainer.style.display = 'block';
+                dateReportedContainer.style.display = 'block';
+                equipmentNameContainer.style.display = 'none';
+                locationContainer.style.display = 'none';
+                analyzedByContainer.style.display = 'block';
+                analyzedByDateContainer.style.display = 'none';
+                checkedByContainer.style.display = 'block';
+                checkedByDateContainer.style.display = 'none';
+                dateContainer.style.display = 'none';
+                samplesHtml = '<h6 class="text-sm font-semibold text-gray-800">Samples</h6><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-600"><thead class="bg-gray-50"><tr><th class="px-4 py-2">Field</th><th class="px-4 py-2">Sample Ref</th><th class="px-4 py-2">Soil Depth (cm)</th><th class="px-4 py-2">Lab No.</th><th class="px-4 py-2">Texture Value</th><th class="px-4 py-2">Texture Class</th><th class="px-4 py-2">pH Value</th><th class="px-4 py-2">pH Class</th><th class="px-4 py-2">Conductivity (µS/cm)</th><th class="px-4 py-2">Conductivity Class</th><th class="px-4 py-2">Org. Carbon (%)</th><th class="px-4 py-2">Org. Carbon Class</th><th class="px-4 py-2">Nitrogen (%)</th><th class="px-4 py-2">Nitrogen Class</th><th class="px-4 py-2">Phosphorus Bray (mg/kg)</th><th class="px-4 py-2">Phosphorus Bray Class</th><th class="px-4 py-2">Phosphorus Olsen (mg/kg)</th><th class="px-4 py-2">Phosphorus Olsen Class</th><th class="px-4 py-2">Potassium (mg/kg)</th><th class="px-4 py-2">Potassium Class</th><th class="px-4 py-2">Calcium (mg/kg)</th><th class="px-4 py-2">Calcium Class</th><th class="px-4 py-2">Magnesium (mg/kg)</th><th class="px-4 py-2">Magnesium Class</th><th class="px-4 py-2">Copper (mg/kg)</th><th class="px-4 py-2">Copper Class</th><th class="px-4 py-2">Manganese (mg/kg)</th><th class="px-4 py-2">Manganese Class</th><th class="px-4 py-2">Iron (mg/kg)</th><th class="px-4 py-2">Iron Class</th><th class="px-4 py-2">Zinc (mg/kg)</th><th class="px-4 py-2">Zinc Class</th></tr></thead><tbody>';
+                data.samples.forEach((sample, index) => {
+                    samplesHtml += `<tr class="border-b"><td class="px-4 py-2"><input type="text" name="field${index + 1}" value="${sample.field}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="text" name="sampleRef${index + 1}" value="${sample.sample_ref}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.1" min="0" name="soilDepth${index + 1}" value="${sample.soil_depth}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="text" name="labNo${index + 1}" value="${sample.lab_no}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td>`;
+                    ['texture', 'ph', 'conductivity', 'org_carbon', 'nitrogen', 'phosphorus_bray', 'phosphorus_olsen', 'potassium', 'calcium', 'magnesium', 'copper', 'manganese', 'iron', 'zinc'].forEach(param => {
+                        samplesHtml += `<td class="px-4 py-2"><input type="${param === 'phosphorus_olsen' ? 'text' : 'number'}" step="0.01" min="0" name="${param}Value${index + 1}" value="${sample[param].value}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="text" name="${param}Class${index + 1}" value="${sample[param].class}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td>`;
+                    });
+                    samplesHtml += '</tr>';
+                });
+                samplesHtml += '</tbody></table></div><h6 class="text-sm font-semibold text-gray-800">Signatures</h6><div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
+                data.analyzed_by.forEach((person, index) => {
+                    samplesHtml += `<div><label class="block text-sm font-medium text-gray-800">Analyzed By (${index + 1})</label><input type="text" name="analyzedBy${index + 1}" value="${person.name}" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"><label class="block text-sm font-medium text-gray-800 mt-2">Signature</label><input type="text" name="analyzedSignature${index + 1}" value="${person.signature}" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></div>`;
+                });
+                data.checked_by.forEach((person, index) => {
+                    samplesHtml += `<div><label class="block text-sm font-medium text-gray-800">Checked By (${index + 1})</label><input type="text" name="checkedBy${index + 1}" value="${person.name}" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"><label class="block text-sm font-medium text-gray-800 mt-2">Signature</label><input type="text" name="checkedSignature${index + 1}" value="${person.signature}" class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></div>`;
+                });
+                samplesHtml += '</div>';
+            } else {
+                labNumberContainer.style.display = 'block';
+                farmLocationContainer.style.display = 'none';
+                dateReceivedContainer.style.display = 'none';
+                dateReportedContainer.style.display = 'none';
+                equipmentNameContainer.style.display = 'none';
+                locationContainer.style.display = 'none';
+                analyzedByContainer.style.display = 'block';
+                analyzedByDateContainer.style.display = 'block';
+                checkedByContainer.style.display = 'block';
+                checkedByDateContainer.style.display = 'block';
+                dateContainer.style.display = 'block';
+                samplesHtml = '<h6 class="text-sm font-semibold text-gray-800">Samples</h6><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-600"><thead class="bg-gray-50"><tr><th class="px-4 py-2">Sample Ref</th><th class="px-4 py-2">Lab No.</th><th class="px-4 py-2">pH</th><th class="px-4 py-2">Conductivity</th><th class="px-4 py-2">TDS</th><th class="px-4 py-2">Resistivity</th><th class="px-4 py-2">Salinity</th><th class="px-4 py-2">Sodium</th><th class="px-4 py-2">Potassium</th><th class="px-4 py-2">Calcium</th><th class="px-4 py-2">Magnesium</th><th class="px-4 py-2">Carbonates</th><th class="px-4 py-2">Bicarbonates</th><th class="px-4 py-2">Chlorides</th><th class="px-4 py-2">Sulphates</th><th class="px-4 py-2">SAR</th><th class="px-4 py-2">Salinity Class</th></tr></thead><tbody>';
+                data.samples.forEach((sample, index) => {
+                    samplesHtml += `<tr class="border-b"><td class="px-4 py-2"><input type="text" name="sample_ref${index + 1}" value="${sample.sample_ref}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="text" name="lab_num${index + 1}" value="${sample.lab_num}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="pH${index + 1}" value="${sample.pH}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="conductivity${index + 1}" value="${sample.conductivity}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="tds${index + 1}" value="${sample.tds}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="resistivity${index + 1}" value="${sample.resistivity}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="salinity${index + 1}" value="${sample.salinity}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="sodium${index + 1}" value="${sample.sodium}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="potassium${index + 1}" value="${sample.potassium}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="calcium${index + 1}" value="${sample.calcium}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="magnesium${index + 1}" value="${sample.magnesium}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="carbonates${index + 1}" value="${sample.carbonates}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="bicarbonates${index + 1}" value="${sample.bicarbonates}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="chlorides${index + 1}" value="${sample.chlorides}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="sulphates${index + 1}" value="${sample.sulphates}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="number" step="0.01" name="sar${index + 1}" value="${sample.sar}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td><td class="px-4 py-2"><input type="text" name="salinity_class${index + 1}" value="${sample.salinity_class}" class="w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></td></tr>`;
+                });
+                samplesHtml += '</tbody></table></div>';
+            }
+
+            document.getElementById('modalSamples').innerHTML = samplesHtml;
+            document.getElementById('worksheetId').value = id;
+            document.getElementById('worksheetCollection').value = collection;
+            document.getElementById('fullEditBtn').href = collection === 'Water Analysis Worksheet' ? `${url_for('submit.view_water_worksheet', id=id)}` :
+                collection === 'Organic Carbon & Nitrogen Worksheet' ? `${url_for('submit.view_ocn', id=id)}` :
+                collection === 'pH, Phosphorus, Bases & Traces Worksheet' ? `${url_for('submit.view_ph', id=id)}` :
+                collection === 'Water Analysis Report' ? `${url_for('water_analysis.view_water_analysis', id=id)}` :
+                collection === 'Trace Worksheet Form' ? `${url_for('trace.view_trace_worksheet', id=id)}` :
+                collection === 'Soil Analysis Report Form' ? `${url_for('submit.view_soil_analysis', id=id)}` :
+                collection === 'Equipment Operation Log Book' ? `${url_for('equipment.view_equipment_log', id=id)}` : '#';
+            document.getElementById('worksheetModal').classList.remove('hidden');
+            document.getElementById('worksheetModal').classList.add('show');
+        }
+
+        function hideWorksheetModal() {
+            document.getElementById('worksheetModal').classList.remove('show');
+            document.getElementById('worksheetModal').classList.add('hidden');
+        }
+
+        function showDeleteModal(id, collection, title) {
+            document.getElementById('worksheetTitle').textContent = title;
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('show');
+
+            const confirmButton = document.getElementById('confirmDelete');
+            confirmButton.onclick = function() {
+                fetch(`/delete_worksheet/${id}/${encodeURIComponent(collection)}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                    hideDeleteModal();
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                    hideDeleteModal();
+                });
+            };
+        }
+
+        function hideDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
+
+        document.getElementById('cancelDelete').addEventListener('click', hideDeleteModal);
+
+        document.querySelectorAll('.view-action').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.dataset.id;
+                const collection = this.dataset.collection;
+                fetch(`/view/${id}/${encodeURIComponent(collection)}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => showWorksheetModal(data, id, collection))
+                .catch(error => alert('Error fetching worksheet: ' + error.message));
+            });
+        });
+
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const id = document.getElementById('worksheetId').value;
+            const collection = document.getElementById('worksheetCollection').value;
+            fetch(`/edit/${id}/${encodeURIComponent(collection)}`, {
+                method: 'POST',
+                body: new URLSearchParams(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Worksheet updated successfully!');
+                    hideWorksheetModal();
+                    window.location.reload();
+                } else {
+                    alert('Error updating worksheet: ' + data.error);
+                }
+            })
+            .catch(error => alert('Error updating worksheet: ' + error.message));
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

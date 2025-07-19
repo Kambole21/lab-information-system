@@ -1,0 +1,187 @@
+.card {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table {
+    font-size: 0.875rem;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+    padding: 0.5rem;
+}
+
+/* Remove borders for inputs inside table */
+.table input.form-control {
+    border: none;
+    border-radius: 0;
+    padding: 0.25rem;
+    font-size: 0.875rem;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+/* Style for view page <p> tags in table cells */
+.table p {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #333;
+}
+
+/* Faint background colors for entire columns in Analysis Table */
+.table thead tr th:nth-child(3), /* pH (CaCl₂) */
+.table tbody tr td:nth-child(3) {
+    background-color: #e6f3fa; /* Light blue */
+}
+
+.table thead tr th:nth-child(4), /* Phosphorus (P) colspan */
+.table thead tr th:nth-child(5), /* Phosphorus sub-headers */
+.table thead tr th:nth-child(6),
+.table tbody tr td:nth-child(4), /* Phosphorus data cells */
+.table tbody tr td:nth-child(5),
+.table tbody tr td:nth-child(6) {
+    background-color: #e6f7e6; /* Light green */
+}
+
+.table thead tr th:nth-child(7), /* Potassium (K) colspan */
+.table thead tr th:nth-child(8), /* Potassium sub-headers */
+.table thead tr th:nth-child(9),
+.table tbody tr td:nth-child(7), /* Potassium data cells */
+.table tbody tr td:nth-child(8),
+.table tbody tr td:nth-child(9) {
+    background-color: #fff8e1; /* Light yellow */
+}
+
+.table thead tr th:nth-child(10), /* Calcium (Ca) colspan */
+.table thead tr th:nth-child(11), /* Calcium sub-headers */
+.table thead tr th:nth-child(12),
+.table tbody tr td:nth-child(10), /* Calcium data cells */
+.table tbody tr td:nth-child(11),
+.table tbody tr td:nth-child(12) {
+    background-color: #f2e8f5; /* Light purple */
+}
+
+.table thead tr th:nth-child(13), /* Magnesium (Mg) colspan */
+.table thead tr th:nth-child(14), /* Magnesium sub-headers */
+.table thead tr th:nth-child(15),
+.table tbody tr td:nth-child(13), /* Magnesium data cells */
+.table tbody tr td:nth-child(14),
+.table tbody tr td:nth-child(15) {
+    background-color: #fff3e6; /* Light orange */
+}
+
+.table thead tr th:nth-child(16), /* Sodium (Na) colspan */
+.table thead tr th:nth-child(17), /* Sodium sub-headers */
+.table thead tr th:nth-child(18),
+.table tbody tr td:nth-child(16), /* Sodium data cells */
+.table tbody tr td:nth-child(17),
+.table tbody tr td:nth-child(18) {
+    background-color: #f5f5f5; /* Light gray */
+}
+
+/* Faint background colors for entire columns in Calibration Table */
+.calibration .table thead tr th:nth-child(2), /* Phosphorus colspan */
+.calibration .table thead tr th:nth-child(3), /* Phosphorus sub-headers */
+.calibration .table tbody tr td:nth-child(2), /* Phosphorus data cells */
+.calibration .table tbody tr td:nth-child(3) {
+    background-color: #e6f7e6; /* Light green */
+}
+
+.calibration .table thead tr th:nth-child(4), /* Potassium colspan */
+.calibration .table thead tr th:nth-child(5), /* Potassium sub-headers */
+.calibration .table tbody tr td:nth-child(4), /* Potassium data cells */
+.calibration .table tbody tr td:nth-child(5) {
+    background-color: #fff8e1; /* Light yellow */
+}
+
+.calibration .table thead tr th:nth-child(6), /* Calcium colspan */
+.calibration .table thead tr th:nth-child(7), /* Calcium sub-headers */
+.calibration .table tbody tr td:nth-child(6), /* Calcium data cells */
+.calibration .table tbody tr td:nth-child(7) {
+    background-color: #f2e8f5; /* Light purple */
+}
+
+.calibration .table thead tr th:nth-child(8), /* Magnesium colspan */
+.calibration .table thead tr th:nth-child(9), /* Magnesium sub-headers */
+.calibration .table tbody tr td:nth-child(8), /* Magnesium data cells */
+.calibration .table tbody tr td:nth-child(9) {
+    background-color: #fff3e6; /* Light orange */
+}
+
+.calibration .table thead tr th:nth-child(10), /* Sodium colspan */
+.calibration .table thead tr th:nth-child(11), /* Sodium sub-headers */
+.calibration .table tbody tr td:nth-child(10), /* Sodium data cells */
+.calibration .table tbody tr td:nth-child(11) {
+    background-color: #f5f5f5; /* Light gray */
+}
+
+/* Ensure colors are applied in both tables */
+.calibration .table thead tr th,
+.calibration .table tbody tr td,
+.table-responsive .table thead tr th,
+.table-responsive .table tbody tr td {
+    transition: background-color 0.2s ease;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem;
+    }
+    .table {
+        font-size: 0.75rem;
+    }
+    .table input.form-control, .table p {
+        padding: 0.2rem;
+        font-size: 0.75rem;
+    }
+    .row.mb-4 .col-md-6 {
+        margin-bottom: 1rem;
+    }
+    .calibration, .table-responsive {
+        width: 100%;
+    }
+}
+
+@media (max-width: 450px) {
+    .table th, .table td {
+        padding: 0.3rem;
+    }
+    .form-label {
+        font-size: 0.875rem;
+    }
+}
+
+/* Center the heading */
+.intro {
+    text-align: center;
+    margin: 0 auto;
+}
+
+/* Underline style for inputs outside the table */
+input.form-control:not(.table input) {
+    border: none;
+    border-bottom: 1px solid #ced4da;
+    border-radius: 0;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+/* Green focus effect for better UX */
+input.form-control:focus {
+    border-bottom: 2px solid #4caf50;
+    outline: none;
+    box-shadow: none;
+}
+
+/* Calibration container */
+.calibration {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}

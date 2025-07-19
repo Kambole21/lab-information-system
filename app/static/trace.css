@@ -1,0 +1,151 @@
+.card {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table {
+    font-size: 0.875rem;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+/* Remove borders for inputs inside table */
+.table input.form-control {
+    border: none;
+    border-radius: 0;
+    padding: 0.25rem;
+    font-size: 0.875rem;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #333;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem;
+    }
+    .table {
+        font-size: 0.75rem;
+    }
+    .table input.form-control {
+        padding: 0.2rem;
+        font-size: 0.75rem;
+    }
+    .row.mb-4 .col-md-6 {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 500px) {
+    .table th, .table td {
+        padding: 0.5rem;
+    }
+    .form-label {
+        font-size: 0.875rem;
+    }
+}
+
+/* Center the heading */
+.intro {
+    text-align: center;
+    margin: 0 auto;
+}
+
+/* Inputs outside table - underline style */
+input.form-control:not(.table input) {
+    border: none;
+    border-bottom: 1px solid #ced4da;
+    border-radius: 0;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+input.form-control:focus {
+    border-bottom: 2px solid #4caf50;
+    outline: none;
+    box-shadow: none;
+}
+
+/* Faint background colors for each column in Standards and Samples tables */
+.table th:nth-child(2), .table td:nth-child(2), /* Copper Std Conc */
+.table th:nth-child(3), .table td:nth-child(3) /* Copper Abs Reading */ {
+    background-color: rgba(255, 235, 205, 0.3); /* Faint peach for Copper */
+}
+
+.table th:nth-child(4), .table td:nth-child(4), /* Manganese Std Conc */
+.table th:nth-child(5), .table td:nth-child(5) /* Manganese Abs Reading */ {
+    background-color: rgba(211, 211, 211, 0.3); /* Faint gray for Manganese */
+}
+
+.table th:nth-child(6), .table td:nth-child(6), /* Iron Std Conc */
+.table th:nth-child(7), .table td:nth-child(7) /* Iron Abs Reading */ {
+    background-color: rgba(245, 245, 220, 0.3); /* Faint beige for Iron */
+}
+
+.table th:nth-child(8), .table td:nth-child(8), /* Zinc Std Conc */
+.table th:nth-child(9), .table td:nth-child(9) /* Zinc Abs Reading */ {
+    background-color: rgba(224, 255, 255, 0.3); /* Faint cyan for Zinc */
+}
+
+/* Samples table specific column colors */
+.table th:nth-child(3), .table td:nth-child(3), /* Copper Instrum. Reading */
+.table th:nth-child(4), .table td:nth-child(4), /* Copper D.F */
+.table th:nth-child(5), .table td:nth-child(5) /* Copper mg/l */ {
+    background-color: rgba(255, 235, 205, 0.3); /* Faint peach for Copper */
+}
+
+.table th:nth-child(6), .table td:nth-child(6), /* Manganese Instrum. Reading */
+.table th:nth-child(7), .table td:nth-child(7), /* Manganese D.F */
+.table th:nth-child(8), .table td:nth-child(8) /* Manganese mg/l */ {
+    background-color: rgba(211, 211, 211, 0.3); /* Faint gray for Manganese */
+}
+
+.table th:nth-child(9), .table td:nth-child(9), /* Iron Instrum. Reading */
+.table th:nth-child(10), .table td:nth-child(10), /* Iron D.F */
+.table th:nth-child(11), .table td:nth-child(11) /* Iron mg/l */ {
+    background-color: rgba(245, 245, 220, 0.3); /* Faint beige for Iron */
+}
+
+.table th:nth-child(12), .table td:nth-child(12), /* Zinc Instrum. Reading */
+.table th:nth-child(13), .table td:nth-child(13), /* Zinc D.F */
+.table th:nth-child(14), .table td:nth-child(14) /* Zinc mg/l */ {
+    background-color: rgba(224, 255, 255, 0.3); /* Faint cyan for Zinc */
+}
+
+/* Ensure print styles maintain faint colors */
+@media print {
+    .table th:nth-child(2), .table td:nth-child(2),
+    .table th:nth-child(3), .table td:nth-child(3),
+    .table th:nth-child(3), .table td:nth-child(4),
+    .table th:nth-child(4), .table td:nth-child(5) {
+        background-color: rgba(255, 235, 205, 0.3) !important;
+    }
+    .table th:nth-child(4), .table td:nth-child(4),
+    .table th:nth-child(5), .table td:nth-child(5),
+    .table th:nth-child(6), .table td:nth-child(6),
+    .table th:nth-child(7), .table td:nth-child(7),
+    .table th:nth-child(8), .table td:nth-child(8) {
+        background-color: rgba(211, 211, 211, 0.3) !important;
+    }
+    .table th:nth-child(6), .table td:nth-child(6),
+    .table th:nth-child(7), .table td:nth-child(7),
+    .table th:nth-child(9), .table td:nth-child(9),
+    .table th:nth-child(10), .table td:nth-child(10),
+    .table th:nth-child(11), .table td:nth-child(11) {
+        background-color: rgba(245, 245, 220, 0.3) !important;
+    }
+    .table th:nth-child(8), .table td:nth-child(8),
+    .table th:nth-child(9), .table td:nth-child(9),
+    .table th:nth-child(12), .table td:nth-child(12),
+    .table th:nth-child(13), .table td:nth-child(13),
+    .table th:nth-child(14), .table td:nth-child(14) {
+        background-color: rgba(224, 255, 255, 0.3) !important;
+    }
+}

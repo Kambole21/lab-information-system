@@ -1,0 +1,198 @@
+{% extends 'layouts.html' %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='ocn.css') }}">
+
+<main class="main-content p-4">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form id="organicCarbonNitrogenForm" action="{{ url_for('organic_carbon_nitrogen.organic_carbon_nitrogen') }}" method="POST" class="card p-4">
+        {% if worksheet and worksheet.get('_id') %}
+            <input type="hidden" name="id" value="{{ worksheet.get('_id') }}">
+        {% endif %}
+        <div class="intro">
+            <header class="mb-4">
+                <p class="fw-bold">National Agriculture Research Laboratories - Laboratory Analytical Services</p>
+                <h5 class="fw-bold"><u>ORGANIC CARBON & NITROGEN WORKSHEET</u></h5>
+            </header>
+        </div>
+        <!-- Metadata -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label for="date" class="form-label">Date</label>
+                <input type="date" class="form-control" id="date" name="date" value="{{ worksheet.get('date', '') }}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="lab_number" class="form-label">Lab #</label>
+                <input type="text" class="form-control" id="lab_number" name="lab_number" value="{{ worksheet.get('lab_number', '') }}" placeholder="e.g., OCN123" required>
+            </div>
+        </div>
+
+        <!-- Tables Container -->
+        <div class="tables-container d-flex flex-column flex-lg-row gap-4 mb-4">
+            <!-- Left Table -->
+            <div class="table-responsive flex-fill">
+                <h3 class="mb-3">Titration Data (Left)</h3>
+                <table class="table table-bordered table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th>S/N</th>
+                            <th>Lab #</th>
+                            <th>Ini. Vol (mls)</th>
+                            <th>Titre. Vol (mls)</th>
+                            <th>Final. Vol (mls)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in range(1, 31) %}
+                        {% set row = worksheet.get('left_table', [])[i-1] if i <= worksheet.get('left_table', [])|length else {} %}
+                        <tr>
+                            <td>{{ i }}</td>
+                            <td><input type="text" class="form-control form-control-sm" name="left_lab_no{{ i }}" value="{{ row.get('lab_no', '') }}"></td>
+                            <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="left_ini_vol{{ i }}" value="{{ row.get('ini_vol', '') }}"></td>
+                            <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="left_titre_vol{{ i }}" value="{{ row.get('titre_vol', '') }}"></td>
+                            <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="left_final_vol{{ i }}" value="{{ row.get('final_vol', '') }}"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Right Table -->
+            <div class="table-responsive flex-fill">
+                <h3 class="mb-3">Titration Data (Right)</h3>
+                <table class="table table-bordered table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th>S/N</th>
+                            <th>Lab #</th>
+                            <th>Ini. Vol (mls)</th>
+                            <th>Titre. Vol (mls)</th>
+                            <th>Final. Vol (mls)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in range(1, 31) %}
+                        {% set row = worksheet.get('right_table', [])[i-1] if i <= worksheet.get('right_table', [])|length else {} %}
+                        <tr>
+                            <td>{{ i }}</td>
+                            <td><input type="text" class="form-control form-control-sm" name="right_lab_no{{ i }}" value="{{ row.get('lab_no', '') }}"></td>
+                            <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="right_ini_vol{{ i }}" value="{{ row.get('ini_vol', '') }}"></td>
+                            <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="right_titre_vol{{ i }}" value="{{ row.get('titre_vol', '') }}"></td>
+                            <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="right_final_vol{{ i }}" value="{{ row.get('final_vol', '') }}"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label for="analyzed_by" class="form-label">Analyzed By:</label>
+                <input type="text" class="form-control" id="analyzed_by" name="analyzed_by" value="{{ worksheet.get('analyzed_by', {}).get('name', '') }}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="date_analyzed" class="form-label">Date:</label>
+                <input type="date" class="form-control" id="date_analyzed" name="date_analyzed" value="{{ worksheet.get('analyzed_by', {}).get('date', '') }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="checked_by" class="form-label">Checked By:</label>
+                <input type="text" class="form-control" id="checked_by" name="checked_by" value="{{ worksheet.get('checked_by', {}).get('name', '') }}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="date_checked" class="form-label">Date:</label>
+                <input type="date" class="form-control" id="date_checked" name="date_checked" value="{{ worksheet.get('checked_by', {}).get('date', '') }}">
+            </div>
+        </div>
+
+        <!-- Comment -->
+        <div class="row mb-4">
+            <div class="col-md-12 mb-3">
+                <label for="comment" class="form-label">Comment:</label>
+                <textarea class="form-control" id="comment" name="comment">{{ worksheet.get('comment', '') }}</textarea>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">Submit Worksheet</button>
+        </div>
+    </form>
+</main>
+
+<script>
+document.getElementById('organicCarbonNitrogenForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Client-side validation
+    const requiredFields = [
+        { id: 'date', label: 'Date' },
+        { id: 'lab_number', label: 'Lab #' },
+        { id: 'analyzed_by', label: 'Analyzed By' },
+        { id: 'checked_by', label: 'Checked By' }
+    ];
+
+    let isValid = true;
+
+    // Validate required fields
+    requiredFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (!input.value.trim()) {
+            alert(`Please fill in the ${field.label} field.`);
+            input.focus();
+            isValid = false;
+            return;
+        }
+    });
+
+    // Validate numeric fields (non-negative)
+    const numericFields = ['left_ini_vol', 'left_titre_vol', 'left_final_vol', 'right_ini_vol', 'right_titre_vol', 'right_final_vol'];
+    for (let i = 1; i <= 30; i++) {
+        numericFields.forEach(field => {
+            const input = document.querySelector(`input[name="${field}${i}"]`);
+            if (input && input.value && input.value < 0) {
+                alert(`${field.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} for row ${i} must be non-negative.`);
+                input.focus();
+                isValid = false;
+                return;
+            }
+        });
+        if (!isValid) return;
+    }
+
+    // Ensure at least one row in either table has data
+    let hasRowData = false;
+    for (let i = 1; i <= 30; i++) {
+        const fields = ['left_lab_no', 'left_ini_vol', 'left_titre_vol', 'left_final_vol', 'right_lab_no', 'right_ini_vol', 'right_titre_vol', 'right_final_vol'];
+        for (const field of fields) {
+            const input = document.querySelector(`input[name="${field}${i}"]`);
+            if (input && input.value.trim()) {
+                hasRowData = true;
+                break;
+            }
+        }
+        if (hasRowData) break;
+    }
+    if (!hasRowData) {
+        alert('Please provide data for at least one row in either table.');
+        isValid = false;
+    }
+
+    if (isValid) {
+        this.submit();
+    }
+});
+</script>
+{% endblock %}

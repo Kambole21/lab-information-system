@@ -1,0 +1,228 @@
+/* General container styles */
+.main-content {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    margin: 0;
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    font-size: 0.875rem;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+}
+
+th, td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+th {
+    background-color: #f1f3f5;
+    font-weight: bold;
+    color: #333;
+}
+
+tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+/* Input and select styles */
+input:not([type="number"])
+
+.main-content {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+/* Header styles */
+header {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    font-size: 2rem;
+    color: #333;
+    font-weight: 700;
+}
+
+/* Filter form styles */
+form {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #333;
+    font-size: 0.875rem;
+}
+
+input:not([type="number"]), select, textarea {
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    background-color: transparent;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+textarea {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Table styles */
+table {
+    width: 100%;
+    font-size: 0.875rem;
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+}
+
+th, td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+
+th {
+    background-color: #f1f3f5;
+    font-weight: 600;
+    color: #333;
+}
+
+tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+/* Comment column */
+.comment-column {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    max-width: 200px;
+}
+
+/* Dropdown menu styles (from my_files.html) */
+.dropdown-menu {
+    min-width: 120px;
+    z-index: 10;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Modal styles */
+.modal {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal > div {
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Button styles (aligned with my_files.html) */
+button, a:not(.dropdown-menu a) {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+}
+
+button.bg-blue-500, a.bg-blue-500 {
+    background-color: #3b82f6;
+    color: #ffffff;
+}
+
+button.bg-blue-500:hover, a.bg-blue-500:hover {
+    background-color: #2563eb;
+}
+
+button.bg-gray-300 {
+    background-color: #d1d5db;
+    color: #1f2937;
+}
+
+button.bg-gray-300:hover {
+    background-color: #9ca3af;
+}
+
+button.bg-red-500 {
+    background-color: #ef4444;
+    color: #ffffff;
+}
+
+button.bg-red-500:hover {
+    background-color: #dc2626;
+}
+
+.dropdown-menu a, .dropdown-menu button {
+    color: #1f2937;
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-menu a.text-blue-600:hover {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.dropdown-menu a.text-yellow-600:hover {
+    background-color: #fef9c3;
+    color: #d97706;
+}
+
+.dropdown-menu button.text-red-600:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 0.5rem;
+    }
+    table {
+        font-size: 0.75rem;
+    }
+    th, td {
+        padding: 0.5rem;
+    }
+    input, select, textarea {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 500px) {
+    button, a:not(.dropdown-menu a) {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}

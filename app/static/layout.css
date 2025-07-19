@@ -1,0 +1,136 @@
+/* Background */
+body {
+    overflow-x: hidden;
+    font-family: 'Roboto', sans-serif;
+    background-color: #dee9e2;
+; /* Taken from manage.css */
+    margin: 0; /* Ensure no default margins */
+    height: 100vh; /* Ensure body takes full viewport height */
+    font-size: 15px;
+}
+
+/* Sidebar Base */
+#sidebar {
+    width: 240px; /* Aligned with manage.css */
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1030; /* Higher z-index from manage.css */
+    transition: transform 0.3s ease-in-out; /* From manage.css */
+    overflow-y: auto;
+}
+
+.content-wrapper {
+    margin-left: 240px; /* Aligned with sidebar width */
+    transition: margin 0.3s ease-in-out; /* From manage.css */
+    padding: 0; /* Remove padding to eliminate gaps */
+    background-color: #fff;
+    min-height: 100vh; /* Ensure content wrapper fills height */
+    display: flex; /* Use flex to ensure children fill the space */
+    flex-direction: column;
+}
+
+/* Mobile adjustments */
+@media (max-width: 991.98px) { /* Changed from 768px in manage.css to 991.98px to match original layout.css breakpoint */
+    #sidebar {
+        transform: translateX(-100%); /* Hide by default on mobile */
+        position: fixed; /* Ensure it stays fixed */
+        top: 0;
+        left: 0;
+        height: 100%;
+    }
+
+    #sidebar.show, /* New class based on manager.html */
+    #sidebar:not(.sidebar-hidden) { /* If you want to keep sidebar-hidden, this ensures it shows when not hidden */
+        transform: translateX(0);
+    }
+
+    .content-wrapper {
+        margin-left: 0; /* Always full width on mobile unless sidebar is explicitly shown */
+    }
+
+    /* When sidebar is open on mobile, push content */
+    .content-wrapper.content-expanded {
+        margin-left: 240px; /* Adjusted to 240px from manager.css */
+    }
+}
+
+/* Avatar Images */
+.avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    vertical-align: middle;
+}
+
+/* Cards and Tables (from manage.css, not strictly for sidebar but good for overall consistency) */
+.card {
+    border-radius: 10px;
+    margin: 0; /* Ensure no margins create gaps */
+}
+
+.table {
+    background-color: white;
+    border-radius: 6px;
+    margin-bottom: 0; /* Remove default margin to prevent gaps */
+}
+
+.table th,
+.table td {
+    vertical-align: middle;
+}
+
+/* Original layout.css specific styles, adjusted for new layout */
+.bg-agri-white {
+    background: linear-gradient(180deg, #D3F5BC 0%, #1b5e20 100%);
+}
+
+.btn-agri-dark {
+    background-color: #1b5e20;
+    color: #100f0f;
+    border: none;
+}
+
+.btn-agri-dark:hover {
+    background-color: #388e3c;
+}
+
+.dropdown-menu-agri {
+    background-color: #ededed;
+    border: 1px solid #1b5e20;
+}
+
+/* The `sidebar-hidden` and `content-expanded` classes handle the toggle behavior */
+#sidebar.sidebar-hidden {
+    transform: translateX(-100%);
+}
+
+.content-wrapper.content-expanded {
+    margin-left: 0;
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    color: #f8f9fa; /* Changed to a lighter color for better contrast on dark sidebar */
+}
+
+.sidebar .nav-link:hover {
+    color: #f8f9fa;
+    background-color: #343a40; /* Slightly lighter dark for hover */
+}
+
+.sidebar .nav-link.active {
+    color: #fff; /* White for active link */
+    background-color: #0d6efd; /* Bootstrap primary blue for active, similar to manager.html's active state */
+}
+
+a.nav-link.text-white {
+    color: #f8f9fa; /* Ensure links inside dark sidebar are visible */
+}
+
+img {
+    width: 200px; /* Keep existing img style if needed for specific images */
+    height: 60px;
+}

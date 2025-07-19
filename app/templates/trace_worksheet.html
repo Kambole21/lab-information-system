@@ -1,0 +1,238 @@
+{% extends 'layouts.html' %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='trace.css') }}">
+
+<main class="main-content p-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form id="traceElementsForm" action="{{ url_for('trace.trace') }}" method="POST" class="card p-4">
+        {% if worksheet and worksheet.get('_id') %}
+            <input type="hidden" name="id" value="{{ worksheet.get('_id') }}">
+        {% endif %}
+        <div class="intro">
+            <header class="mb-4">
+                <p class="fw-bold">National Agriculture Research Laboratories - Laboratory Analytical Services</p>
+                <h5 class="fw-bold"><u>TRACE ELEMENTS WORKSHEET</u></h5>
+            </header>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label for="labNumber" class="form-label"><b>Lab #:</b></label>
+                <input type="text" class="form-control" id="labNumber" name="lab_number" value="{{ worksheet.get('lab_number', '') }}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="dateOfAnalysis" class="form-label"><b>Date of Analysis:</b></label>
+                <input type="date" class="form-control" id="dateOfAnalysis" name="date_of_analysis" value="{{ worksheet.get('date_of_analysis', '') }}" required>
+            </div>
+        </div>
+
+        <h3 class="mb-3">Standards</h3>
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>S/N</th>
+                        <th colspan="2">Copper</th>
+                        <th colspan="2">Manganese</th>
+                        <th colspan="2">Iron</th>
+                        <th colspan="2">Zinc</th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(1, 6) %}
+                    {% set standard = worksheet.get('standards', [])[i-1] if i <= worksheet.get('standards', [])|length else {} %}
+                    <tr>
+                        <td>{{ i }}</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="cu_std_conc{{ i }}" value="{{ standard.get('copper', {}).get('std_conc', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="cu_abs_reading{{ i }}" value="{{ standard.get('copper', {}).get('abs_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="mn_std_conc{{ i }}" value="{{ standard.get('manganese', {}).get('std_conc', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="mn_abs_reading{{ i }}" value="{{ standard.get('manganese', {}).get('abs_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="fe_std_conc{{ i }}" value="{{ standard.get('iron', {}).get('std_conc', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="fe_abs_reading{{ i }}" value="{{ standard.get('iron', {}).get('abs_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="zn_std_conc{{ i }}" value="{{ standard.get('zinc', {}).get('std_conc', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="zn_abs_reading{{ i }}" value="{{ standard.get('zinc', {}).get('abs_reading', '') }}"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>S/N</th>
+                        <th>Lab No.</th>
+                        <th colspan="3"><u>Copper (Cu)</u></th>
+                        <th colspan="3"><u>Manganese (Mn)</u></th>
+                        <th colspan="3"><u>Iron (Fe)</u></th>
+                        <th colspan="3"><u>Zinc (Zn)</u></th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(1, 31) %}
+                    {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                    <tr>
+                        <td>{{ i }}</td>
+                        <td><input type="text" class="form-control form-control-sm" name="lab_no{{ i }}" value="{{ sample.get('lab_no', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="cu_instrument_reading{{ i }}" value="{{ sample.get('copper', {}).get('instrument_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="cu_df{{ i }}" value="{{ sample.get('copper', {}).get('df', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="cu_mg_l{{ i }}" value="{{ sample.get('copper', {}).get('mg_l', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="mn_instrument_reading{{ i }}" value="{{ sample.get('manganese', {}).get('instrument_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="mn_df{{ i }}" value="{{ sample.get('manganese', {}).get('df', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="mn_mg_l{{ i }}" value="{{ sample.get('manganese', {}).get('mg_l', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="fe_instrument_reading{{ i }}" value="{{ sample.get('iron', {}).get('instrument_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="fe_df{{ i }}" value="{{ sample.get('iron', {}).get('df', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="fe_mg_l{{ i }}" value="{{ sample.get('iron', {}).get('mg_l', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="zn_instrument_reading{{ i }}" value="{{ sample.get('zinc', {}).get('instrument_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="zn_df{{ i }}" value="{{ sample.get('zinc', {}).get('df', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="zn_mg_l{{ i }}" value="{{ sample.get('zinc', {}).get('mg_l', '') }}"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label for="analyzedby" class="form-label">Analyzed By:</label>
+                <input type="text" class="form-control" id="analyzedby" name="analyzedby" value="{{ worksheet.get('analyzed_by', {}).get('name', '') }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="dateanalyzedby" class="form-label">Date:</label>
+                <input type="date" class="form-control" id="dateanalyzedby" name="dateanalyzedby" value="{{ worksheet.get('analyzed_by', {}).get('date', '') }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="checkedby" class="form-label">Checked By:</label>
+                <input type="text" class="form-control" id="checkedby" name="checkedby" value="{{ worksheet.get('checked_by', {}).get('name', '') }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="datechecked" class="form-label">Date:</label>
+                <input type="date" class="form-control" id="datechecked" name="datechecked" value="{{ worksheet.get('checked_by', {}).get('date', '') }}">
+            </div>
+        </div>
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">Submit Worksheet</button>
+        </div>
+    </form>
+</main>
+
+<script>
+document.getElementById('traceElementsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Client-side validation
+    const requiredFields = [
+        { id: 'labNumber', label: 'Lab #' },
+        { id: 'dateOfAnalysis', label: 'Date of Analysis' }
+    ];
+
+    let isValid = true;
+
+    // Validate metadata 
+    requiredFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (!input.value.trim()) {
+            alert(`Please fill in the ${field.label} field.`);
+            input.focus();
+            isValid = false;
+            return;
+        }
+    });
+
+    // If metadata isn't valid, stop here
+    if (!isValid) return;
+
+    // Validate numeric fields (non-negative)
+    const numericFields = [
+        'cu_std_conc', 'cu_abs_reading', 'mn_std_conc', 'mn_abs_reading',
+        'fe_std_conc', 'fe_abs_reading', 'zn_std_conc', 'zn_abs_reading',
+        'cu_instrument_reading', 'cu_df', 'cu_mg_l',
+        'mn_instrument_reading', 'mn_df', 'mn_mg_l',
+        'fe_instrument_reading', 'fe_df', 'fe_mg_l',
+        'zn_instrument_reading', 'zn_df', 'zn_mg_l'
+    ];
+    for (let i = 1; i <= 30; i++) { // Iterate up to 30 for samples, 5 for standards
+        numericFields.forEach(field => {
+            // Adjust iteration for standard fields
+            if ((field.includes('std_conc') || field.includes('abs_reading')) && i > 5) {
+                return; // Skip if it's a standard field and row is beyond the 5 standard rows
+            }
+
+            const input = document.querySelector(`input[name="${field}${i}"]`);
+            if (input && input.value && parseFloat(input.value) < 0) {
+                alert(`${field.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} for row ${i} must be non-negative.`);
+                input.focus();
+                isValid = false;
+                return;
+            }
+        });
+        if (!isValid) return;
+    }
+
+    // Ensure at least one sample has data
+    let hasSampleData = false;
+    for (let i = 1; i <= 30; i++) {
+        const fields = [
+            'lab_no', 'cu_instrument_reading', 'cu_df', 'cu_mg_l',
+            'mn_instrument_reading', 'mn_df', 'mn_mg_l',
+            'fe_instrument_reading', 'fe_df', 'fe_mg_l',
+            'zn_instrument_reading', 'zn_df', 'zn_mg_l'
+        ];
+        for (const field of fields) {
+            const input = document.querySelector(`input[name="${field}${i}"]`);
+            if (input && input.value.trim()) {
+                hasSampleData = true;
+                break;
+            }
+        }
+        if (hasSampleData) break;
+    }
+    if (!hasSampleData) {
+        alert('Please provide data for at least one sample.');
+        isValid = false;
+    }
+
+    if (isValid) {
+        this.submit();
+    }
+});
+</script>
+{% endblock %}

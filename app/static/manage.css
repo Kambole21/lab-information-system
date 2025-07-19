@@ -1,0 +1,140 @@
+/* Background */
+body {
+  background-color: #f5f6fa;
+}
+
+/* Sidebar Base */
+#sidebar {
+  width: 240px;
+  min-height: 100vh;
+  position: fixed;
+  z-index: 1030;
+  transition: transform 0.3s ease-in-out;
+}
+
+#wrapper #page-content {
+  margin-left: 240px;
+  transition: margin 0.3s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  #sidebar {
+    transform: translateX(-100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+  }
+
+  #sidebar.show {
+    transform: translateX(0);
+  }
+
+  #wrapper #page-content {
+    margin-left: 0;
+  }
+}
+
+/* Avatar Images */
+.avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+}
+
+/* Cards and Tables */
+.card {
+  border-radius: 10px;
+}
+
+.table {
+  background-color: white;
+  border-radius: 6px;
+}
+
+.table th,
+.table td {
+  vertical-align: middle;
+}
+
+/* Badge Colors */
+.bg-danger {
+  background-color: rgb(234, 174, 180) !important;
+  color: #fb2300;
+}
+
+.bg-secondary {
+  background-color: rgb(180, 182, 184) !important;
+  color: #565555;
+}
+
+.bg-success {
+  background-color: rgb(188, 241, 209) !important;
+  color: #2fbc77;
+}
+
+.bg-warning {
+  background-color: rgb(255, 243, 205) !important;
+  color: #664d03;
+}
+
+/* User Info Panel Header */
+#userInfoPanel .d-flex {
+  align-items: center;
+}
+
+#userInfoPanel .card-title {
+  margin-bottom: 0;
+  font-size: 1.25rem;
+}
+
+#userInfoPanel .badge {
+  font-size: 0.9rem;
+  padding: 0.5em 1em;
+}
+
+#userInfoPanel .ms-auto {
+  line-height: 1;
+}
+
+/* Adjusted for Two-Column Layout */
+#userInfoPanelContainer {
+  height: 100%;
+}
+
+#userInfoPanel {
+  margin-bottom: 0;
+}
+
+/* Modern Lightweight Button Styling */
+.btn-sm {
+  padding: 0.2rem 0.4rem;
+  font-size: 1rem;
+  border-width: 1px;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-success, .btn-outline-danger {
+  background-color: transparent;
+  border-color: #2fbc77;
+  color: #2fbc77;
+}
+
+.btn-outline-danger {
+  border-color: #fb2300;
+  color: #fb2300;
+}
+
+.btn-outline-success:hover,
+.btn-outline-danger:hover {
+  background-color: rgba(0, 0, 0, 0.05); /* Subtle background on hover */
+  border-color: inherit;
+  color: inherit;
+}
+
+.btn-sm i {
+  vertical-align: middle;
+  font-size: 1.1rem;
+}

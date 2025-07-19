@@ -1,0 +1,344 @@
+{% extends 'layouts.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='ph_bases.css') }}">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+@media print {
+    /* Set A4 landscape with minimal margins for wide tables */
+    @page {
+        size: A4 landscape;
+        margin: 1cm;
+    }
+    /* Hide sidebar (assuming it's in layouts.html with a common class or ID like 'sidebar') */
+    .sidebar, [class*="sidebar"], [id*="sidebar"], nav {
+        display: none !important;
+    }
+    /* Hide buttons and flash messages */
+    .action-buttons, .alert {
+        display: none !important;
+    }
+    /* Ensure form content fits well in PDF */
+    .main-content {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+    }
+    .card {
+        box-shadow: none;
+ismael-1
+        border: none;
+        margin: 0;
+        padding: 0.5rem;
+    }
+    .table {
+        font-size: 8pt; /* Reduced font size for compact layout */
+        width: 100%;
+        table-layout: fixed; /* Ensure equal column widths */
+    }
+    .table th, .table td {
+        padding: 0.2rem; /* Reduced padding */
+        border: 1px solid #000 !important; /* Ensure table borders are visible */
+        word-wrap: break-word;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .table th {
+        font-weight: bold;
+    }
+    p, .form-control-static {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        font-size: 8pt;
+        margin: 0;
+    }
+    .form-label {
+        font-size: 8pt;
+        color: #000;
+    }
+    .intro {
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    /* Prevent page breaks within tables and sections */
+    .table, .table-responsive, .calibration, .row, .intro {
+        page-break-inside: avoid;
+    }
+}
+
+/* Modern button styles */
+.action-buttons .btn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease-in-out;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.action-buttons .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Specific button styles */
+.action-buttons .btn-back {
+    background-color: #6b7280; /* Neutral gray */
+    color: #fff;
+}
+
+.action-buttons .btn-back:hover {
+    background-color: #4b5563;
+}
+
+.action-buttons .btn-edit {
+    background-color: #f59e0b; /* Warning yellow for edit */
+    color: #fff;
+}
+
+.action-buttons .btn-edit:hover {
+    background-color: #d97706;
+}
+
+/* Dropdown button for downloads */
+.action-buttons .btn-download {
+    background-color: #0284c7; /* Blue for downloads */
+    color: #fff;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-buttons .btn-download:hover {
+    background-color: #026ba8;
+}
+
+.action-buttons .dropdown-menu {
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    min-width: 150px;
+}
+
+.action-buttons .dropdown-item {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.action-buttons .dropdown-item:hover {
+    background-color: #f1f5f9;
+}
+
+/* Icon styles */
+.action-buttons .bi {
+    font-size: 1rem;
+}
+
+/* Responsive button adjustments */
+@media (max-width: 500px) {
+    .action-buttons .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    .action-buttons .btn-download {
+        padding: 0.5rem;
+    }
+    .action-buttons {
+        flex-direction: column !important;
+        gap: 0.5rem;
+    }
+}
+</style>
+
+<main class="main-content p-4">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card p-4">
+        <div class="intro mb-4 text-center">
+            <header>
+                <p class="fw-bold">National Agriculture Research Laboratories</p>
+                <p class="fw-bold">Laboratory Analytical Services</p>
+                <h5 class="fw-bold"><u>pH, Phosphorus, Bases & Traces Analysis Worksheet</u></h5>
+            </header>
+        </div>
+
+        <!-- Metadata -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><b>Lab #:</b></label>
+                <p class="form-control-static">{{ worksheet.get('lab_number') or '' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><b>Date of Analysis:</b></label>
+                <p class="form-control-static">{{ worksheet.get('date_of_analysis') or '' }}</p>
+            </div>
+        </div>
+
+        <!-- Calibration Table -->
+        <div class="table-responsive mb-4 calibration">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th rowspan="2">S/N</th>
+                        <th colspan="2">Phosphorus</th>
+                        <th colspan="2">Potassium</th>
+                        <th colspan="2">Calcium</th>
+                        <th colspan="2">Magnesium</th>
+                        <th colspan="2">Sodium</th>
+                    </tr>
+                    <tr>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in worksheet.get('calibration_table', []) %}
+                    <tr>
+                        <td>{{ row.get('serial_number') or '' }}</td>
+                        <td>{{ row.get('p_std_conc') or '' }}</td>
+                        <td>{{ row.get('p_abs_reading') or '' }}</td>
+                        <td>{{ row.get('k_std_conc') or '' }}</td>
+                        <td>{{ row.get('k_abs_reading') or '' }}</td>
+                        <td>{{ row.get('ca_std_conc') or '' }}</td>
+                        <td>{{ row.get('ca_abs_reading') or '' }}</td>
+                        <td>{{ row.get('mg_std_conc') or '' }}</td>
+                        <td>{{ row.get('mg_abs_reading') or '' }}</td>
+                        <td>{{ row.get('na_std_conc') or '' }}</td>
+                        <td>{{ row.get('na_abs_reading') or '' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Analysis Table -->
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th rowspan="2">S/N</th>
+                        <th rowspan="2">Lab No.</th>
+                        <th rowspan="2">pH (CaCl₂)</th>
+                        <th colspan="3">Phosphorus (P)</th>
+                        <th colspan="3">Potassium (K)</th>
+                        <th colspan="3">Calcium (Ca)</th>
+                        <th colspan="3">Magnesium (Mg)</th>
+                        <th colspan="3">Sodium (Na)</th>
+                    </tr>
+                    <tr>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in worksheet.get('analysis_table', []) %}
+                    <tr>
+                        <td>{{ row.get('serial_number') or '' }}</td>
+                        <td>{{ row.get('lab_no') or '' }}</td>
+                        <td>{{ row.get('ph_cacl2') or '' }}</td>
+                        <td>{{ row.get('p_instrument_reading') or '' }}</td>
+                        <td>{{ row.get('p_df') or '' }}</td>
+                        <td>{{ row.get('p_mgl') or '' }}</td>
+                        <td>{{ row.get('k_instrument_reading') or '' }}</td>
+                        <td>{{ row.get('k_df') or '' }}</td>
+                        <td>{{ row.get('k_mgl') or '' }}</td>
+                        <td>{{ row.get('ca_instrument_reading') or '' }}</td>
+                        <td>{{ row.get('ca_df') or '' }}</td>
+                        <td>{{ row.get('ca_mgl') or '' }}</td>
+                        <td>{{ row.get('mg_instrument_reading') or '' }}</td>
+                        <td>{{ row.get('mg_df') or '' }}</td>
+                        <td>{{ row.get('mg_mgl') or '' }}</td>
+                        <td>{{ row.get('na_instrument_reading') or '' }}</td>
+                        <td>{{ row.get('na_df') or '' }}</td>
+                        <td>{{ row.get('na_mgl') or '' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Signatures -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><b>Analyzed By:</b></label>
+                <p class="form-control-static">{{ worksheet.get('analyzed_by', {}).get('name') or '' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><b>Date Checked:</b></label>
+                <p class="form-control-static">{{ worksheet.get('checked_by', {}).get('date') or '' }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><b>Checked By:</b></label>
+                <p class="form-control-static">{{ worksheet.get('checked_by', {}).get('name') or '' }}</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons d-flex justify-content-end gap-3">
+            <a href="{{ url_for('submit.submit') }}" class="btn btn-back">Back to Submission Page</a>
+            <a href="{{ url_for('ph_bases.view_ph', id=worksheet.get('_id')) }}" class="btn btn-edit">Edit</a>
+            <div class="dropdown">
+                <button class="btn btn-download dropdown-toggle" type="button" id="downloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-download"></i>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
+                    <li><a class="dropdown-item" href="#" onclick="downloadPDF()"><i class="bi bi-file-earmark-pdf"></i> Download PDF</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('submit.download_ph_csv', id=worksheet.get('_id')) }}"><i class="bi bi-filetype-csv"></i> Download CSV</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+function downloadPDF() {
+    window.print();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,544 @@
+/* General styling for Zari Lab theme */
+.search-bar {
+    max-width: 300px;
+    width: 100%;
+}
+
+.action-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Specific hover for new worksheet card to disable it if needed */
+#newWorksheetCard:hover {
+    transform: none; /* Disable transform on hover */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Keep original shadow */
+}
+
+
+.action-card i {
+    color: #4caf50; /* Zari Lab green */
+}
+
+.action-card h5 {
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.card-hover {
+    background-color: #f5f5dc; /* Beige hover for modal trigger */
+}
+
+.recent-worksheets .table {
+    margin-bottom: 0;
+}
+
+.recent-worksheets .btn-outline-primary,
+.recent-worksheets .btn-outline-secondary {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.text-agri-green {
+    color: #4caf50; /* Zari Lab green */
+}
+
+.text-agri-green:hover {
+    color: #388e3c; /* Darker green on hover */
+}
+
+/* --- MODAL STYLING: Modern & Lightweight --- */
+.modal-content {
+    border: none; /* Removed border */
+    border-radius: 12px; /* More rounded corners */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Softer, larger shadow */
+    overflow: hidden; /* Ensures rounded corners are respected for content */
+}
+
+.modal-header {
+    background-color: #f0f8f0; /* Lighter, fresh green tint */
+    border-bottom: none; /* Removed border */
+    padding: 1.5rem; /* Increased padding */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    color: #2e7d32; /* Darker green for title */
+    font-weight: 600; /* Bolder title */
+    font-size: 1.4rem; /* Slightly larger title */
+}
+
+.modal-footer {
+    border-top: none; /* Removed border */
+    padding: 1rem 1.5rem; /* Consistent padding */
+    background-color: #f8f8f8; /* Light gray for footer */
+}
+
+.list-group-flush .list-group-item {
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+}
+
+.list-group-item.modal-list-item { /* Custom class for modal list items */
+    padding: 1rem 1.5rem; /* Consistent padding for list items */
+    transition: background-color 0.2s ease, transform 0.2s ease; /* Smooth transition */
+    border-bottom: 1px solid #eee; /* Light separator */
+}
+
+.list-group-item.modal-list-item:last-child {
+    border-bottom: none; /* No border for the last item */
+}
+
+.list-group-item.modal-list-item:hover {
+    background-color: #e6ffe6; /* Very light green on hover */
+    transform: translateX(5px); /* Subtle slide effect on hover */
+}
+
+.list-group-item a {
+    color: #388e3c; /* Consistent dark green for links */
+    font-weight: 500;
+    display: flex; /* Use flexbox for icon alignment */
+    align-items: center; /* Align icon and text vertically */
+}
+
+.list-group-item a i {
+    color: #4caf50; /* Zari Lab green for icons */
+    font-size: 1.2rem; /* Slightly larger icons */
+    margin-right: 1rem; /* Space between icon and text */
+}
+
+/* Enhanced user-info-card styling - NO CHANGES */
+.user-info-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Space out icon, details, and profession */
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); /* Subtle gradient */
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    width: 360px; /* Increased width to accommodate profession */
+    height: 90px;
+    border: 1px solid #ced4da;
+    font-family: Arial, sans-serif;
+}
+
+.user-info-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+}
+
+.user-icon {
+    margin-right: 1.2rem;
+    flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.user-icon i {
+    font-size: 2.5rem;
+    color: #4caf50; /* Zari Lab green */
+    transition: color 0.3s ease;
+}
+
+.user-info-card:hover .user-icon i {
+    color: #388e3c; /* Darker green on hover */
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-grow: 1; /* Allow details to take available space */
+}
+
+.user-fname, .user-lname {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #212529;
+    line-height: 1.3;
+}
+
+.user-role {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: #4caf50; /* Zari Lab green */
+    text-transform: capitalize;
+}
+
+.user-profession {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0; /* Prevent profession from shrinking */
+    margin-left: 1rem;
+}
+
+.user-profession-text {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #212529;
+    text-align: right;
+}
+
+.user-info-card a {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+}
+
+/* --- AVAILABLE WORKSHEETS SECTION: Modern & Lightweight --- */
+.available-worksheets .worksheet-info-card {
+    border: 1px solid #e0e0e0; /* Lighter border */
+    border-radius: 12px; /* More rounded corners */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Softer shadow */
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    background-color: #ffffff; /* Clean white background */
+}
+
+.available-worksheets .worksheet-info-card:hover {
+    transform: translateY(-8px); /* More pronounced lift on hover */
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); /* Stronger shadow on hover */
+}
+
+.available-worksheets .worksheet-info-card .card-body {
+    position: relative;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly opaque for readability */
+    height: 100%;
+    padding: 1.5rem; /* Increased padding */
+    transition: background-color 0.3s ease-in-out;
+    display: flex; /* Use flexbox for content alignment */
+    flex-direction: column;
+    justify-content: space-between; /* Distribute space */
+}
+
+.available-worksheets .worksheet-info-card:hover .card-body {
+    background-color: rgba(255, 255, 255, 0.6); /* More transparent on hover for image visibility */
+}
+
+.available-worksheets .worksheet-info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0; /* Hidden by default */
+    transition: opacity 0.4s ease-in-out, transform 0.6s ease-in-out; /* Slower, smoother transition */
+    transform: scale(1.1); /* Slightly zoomed in initially */
+    z-index: 0;
+}
+
+.available-worksheets .worksheet-info-card:hover::before {
+    opacity: 0.8; /* More visible on hover */
+    transform: scale(1); /* Zoom out slightly to fill on hover */
+}
+
+
+/* Specific background images for each card */
+#waterAnalysisCard::before {
+    background-image: url('../static/images/water_analysis.jpeg');
+}
+
+#equipmentCard::before {
+    background-image: url('../static/images/equipment.jpg');
+}
+
+#soilAnalysisCard::before {
+    background-image: url('../static/images/soil_analysis.jpg');
+}
+
+#traceElementsCard::before {
+    background-image: url('../static/images/trace_elements.jpg');
+}
+
+#waterWorksheetCard::before {
+    background-image: url('../static/images/water_worksheet.jpg');
+}
+
+#organicCarbonNitrogenCard::before {
+    background-image: url('../static/images/ocn.jpg');
+}
+
+#ph_basesCard::before{
+    background-image: url('../static/images/ph_bases.jpg');
+}
+
+
+.available-worksheets .worksheet-info-card .card-title {
+    color: #2e7d32; /* Darker green for titles */
+    font-size: 1.25rem; /* Slightly larger title */
+    margin-bottom: 0.5rem; /* Reduced margin */
+    font-weight: 600; /* Bolder title */
+}
+
+.available-worksheets .worksheet-info-card .card-title i {
+    color: #4caf50; /* Zari Lab green for icons */
+    font-size: 1.4rem; /* Larger icons */
+}
+
+.available-worksheets .worksheet-info-card .card-text {
+    font-size: 1rem; /* Slightly larger text */
+    color: #666; /* Softer gray for text */
+    line-height: 1.6; /* Increased line height for readability */
+    margin-bottom: 1.5rem; /* More space before button */
+    flex-grow: 1; /* Allow text to grow and push button down */
+}
+
+.available-worksheets .btn-outline-agri-green {
+    color: #4caf50;
+    border-color: #4caf50;
+    font-weight: 500;
+    padding: 0.6rem 1.2rem; /* Larger button */
+    border-radius: 8px; /* More rounded button */
+    transition: all 0.2s ease-in-out;
+}
+
+.available-worksheets .btn-outline-agri-green:hover {
+    background-color: #4caf50;
+    color: #fff;
+    transform: translateY(-2px); /* Subtle lift on button hover */
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2);
+}
+
+/* New CSS for the dropdown quick actions */
+.quick-actions-container {
+    /* Adjust as needed for spacing */
+    margin-bottom: 2rem;
+}
+
+.quick-actions-container .dropdown-menu {
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    padding: 1rem; /* Add some padding inside the dropdown */
+    min-width: 320px; /* Ensure enough width for the cards */
+}
+
+/* Adjustments for the grid within the dropdown */
+.quick-actions-container .dropdown-menu .row {
+    margin-left: -0.5rem; /* Counteract Bootstrap's row padding */
+    margin-right: -0.5rem;
+}
+
+.quick-actions-container .dropdown-menu .col-6,
+.quick-actions-container .dropdown-menu .col-md-3 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.quick-actions-container .dropdown-menu .action-card {
+    margin-bottom: 1rem; /* Space between cards within the dropdown */
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .action-card h5 {
+        font-size: 0.95rem;
+    }
+    .quick-actions .col-6 {
+        margin-bottom: 0.5rem;
+    }
+    .recent-worksheets .btn-outline-primary,
+    .recent-worksheets .btn-outline-secondary {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+    .user-info-card {
+        width: 100%;
+        height: auto;
+        padding: 0.8rem;
+        flex-wrap: wrap; /* Allow wrapping if needed */
+    }
+    .user-icon i {
+        font-size: 2rem;
+    }
+    .user-fname, .user-lname {
+        font-size: 0.95rem;
+    }
+    .user-role {
+        font-size: 0.8rem;
+    }
+    .user-profession-text {
+        font-size: 0.85rem;
+    }
+    .user-profession {
+        margin-left: 0.8rem;
+    }
+    .available-worksheets .worksheet-info-card .card-title {
+        font-size: 1.1rem;
+    }
+    .available-worksheets .worksheet-info-card .card-text {
+        font-size: 0.9rem;
+    }
+    .modal-list-item {
+        padding: 0.8rem 1rem !important; /* Adjust padding for smaller screens */
+    }
+    .modal-list-item a i {
+        font-size: 1.1rem !important;
+        margin-right: 0.8rem !important;
+    }
+
+    /* Adjust dropdown behavior on smaller screens */
+    .quick-actions-container .dropdown-menu {
+        min-width: unset; /* Remove min-width on small screens */
+        width: 90%; /* Take up more width */
+        left: 50% !important; /* Center the dropdown */
+        transform: translateX(-50%) !important; /* Center the dropdown */
+    }
+    .quick-actions-container .dropdown-menu .col-6 {
+        flex: 0 0 100%; /* Stack cards vertically on small screens */
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-content {
+        padding: 1rem !important;
+    }
+    .quick-actions .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    .action-card h5 {
+        font-size: 0.9rem;
+    }
+    .list-group-item {
+        font-size: 0.875rem;
+    }
+    .user-info-card {
+        padding: 0.6rem;
+        flex-direction: column; /* Stack vertically on small screens */
+        align-items: flex-start;
+        height: auto;
+    }
+    .user-icon {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+    .user-icon i {
+        font-size: 1.8rem;
+    }
+    .user-fname, .user-lname {
+        font-size: 0.9rem;
+    }
+    .user-role {
+        font-size: 0.75rem;
+    }
+    .user-profession {
+        margin-left: 0;
+        justify-content: flex-start;
+    }
+    .user-profession-text {
+        font-size: 0.8rem;
+    }
+    .available-worksheets .worksheet-info-card .card-title {
+        font-size: 1rem;
+    }
+    .available-worksheets .worksheet-info-card .card-text {
+        font-size: 0.85rem;
+    }
+}
+
+/* Print styles for consistency with Zari Lab theme */
+@media print {
+    @page {
+        size: A4;
+        margin: 1cm;
+    }
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: white;
+    }
+    .main-content {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+    .user-info-card {
+        border: none;
+        box-shadow: none;
+        background: none;
+        padding: 0.5cm;
+        width: auto;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .user-icon {
+        display: none; /* Hide icon in print */
+    }
+    .user-details {
+        display: block;
+    }
+    .user-fname, .user-lname {
+        font-size: 10pt;
+        font-weight: bold;
+        margin: 0;
+    }
+    .user-role {
+        font-size: 9pt;
+        color: #000;
+    }
+    .user-profession {
+        margin-left: 0;
+    }
+    .user-profession-text {
+        font-size: 9pt;
+        color: #000;
+    }
+    .user-info-card a {
+        text-decoration: none;
+        color: #000;
+    }
+    .action-card, .modal, .btn, .recent-worksheets .btn-outline-primary, .recent-worksheets .btn-outline-secondary, .available-worksheets .btn-outline-agri-green {
+        display: none !important; /* Hide interactive elements */
+    }
+    .available-worksheets .worksheet-info-card {
+        border: 1px solid #ccc;
+        box-shadow: none;
+        margin-bottom: 10px;
+        background-color: transparent !important; /* Ensure no background image in print */
+    }
+    .available-worksheets .worksheet-info-card::before {
+        content: none !important; /* Hide background image in print */
+    }
+    .available-worksheets .worksheet-info-card .card-body {
+        background-color: transparent !important; /* Ensure no opaque background in print */
+    }
+    .available-worksheets .worksheet-info-card .card-title {
+        color: #000;
+        font-size: 11pt;
+    }
+    .available-worksheets .worksheet-info-card .card-text {
+        color: #333;
+        font-size: 9pt;
+    }
+}

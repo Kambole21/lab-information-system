@@ -1,0 +1,200 @@
+{% extends 'layouts.html' %}
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='equipment_log.css') }}">
+
+<main class="main-content p-4">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card p-4">
+        
+        <div class="caption-wrapper mb-4 text-center">
+            <p class="fw-bold text-muted"><u>EQUIPMENT OPERATION AND MAINTENANCE LOG</u></p>
+        </div>
+
+        <!-- Begin Form -->
+        <form method="POST" action="{{ url_for('equipment.equipment') }}" id="equipmentLogForm">
+            {% if worksheet and worksheet.get('_id') %}
+                <input type="hidden" name="id" value="{{ worksheet.get('_id') }}">
+            {% endif %}
+            
+            <div class="row mb-4">
+                <table class="table table-bordered table-sm" id="infotable">
+                    <tbody>
+                        <tr>
+                            <th><strong>Equipment Name:</strong><input type="text" class="form-control form-control-sm" name="equipmentname" value="{{ worksheet.get('equipment_name', '') }}" required></th>
+                            <th><strong>Location:</strong><input type="text" class="form-control form-control-sm" name="locationname" id="locationname" value="{{ worksheet.get('location', '') }}" required></th>
+                        </tr>
+                        <tr>
+                            <th><strong>Model No:</strong><input type="text" class="form-control form-control-sm" name="modelno" value="{{ worksheet.get('model_no', '') }}"></th>
+                            <th><strong>Serial No:</strong><input type="text" class="form-control form-control-sm" name="serialno" value="{{ worksheet.get('serial_no', '') }}"></th>
+                        </tr>
+                        <tr>
+                            <th><strong>Manufacturer:</strong><input type="text" class="form-control form-control-sm" name="manufacturername" value="{{ worksheet.get('manufacturer', '') }}"></th>
+                            <th></th>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Log Table -->
+            <div class="table-responsive-lg mb-4">
+                <table id="logTable" class="table table-bordered table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th>S/N</th>
+                            <th>Date</th>
+                            <th>Operator</th>
+                            <th>Analysis Done</th>
+                            <th>No. of Samples</th>
+                            <th>Instrument Performance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if worksheet and worksheet.get('log_entries') %}
+                            {% for entry in worksheet.get('log_entries', []) %}
+                                <tr>
+                                    <td>{{ entry.serial_number }}</td>
+                                    <td><input type="date" class="form-control form-control-sm" name="date{{ entry.serial_number }}" value="{{ entry.date }}" required></td>
+                                    <td><input type="text" class="form-control form-control-sm" name="operator{{ entry.serial_number }}" value="{{ entry.operator }}" required></td>
+                                    <td><input type="text" class="form-control form-control-sm" name="analysis{{ entry.serial_number }}" value="{{ entry.analysis_done }}" required></td>
+                                    <td><input type="number" class="form-control form-control-sm" name="samples{{ entry.serial_number }}" value="{{ entry.no_of_samples | default('') }}" min="0"></td>
+                                    <td><input type="text" class="form-control form-control-sm" name="performance{{ entry.serial_number }}" value="{{ entry.instrument_performance | default('') }}"></td>
+                                    <td><button type="button" class="btn btn-sm btn-danger remove-row"><i class="bi bi-trash"></i></button></td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td>1</td>
+                                <td><input type="date" class="form-control form-control-sm" name="date1" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="operator1" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="analysis1" required></td>
+                                <td><input type="number" class="form-control form-control-sm" name="samples1" min="0"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="performance1"></td>
+                                <td><button type="button" class="btn btn-sm btn-danger remove-row"><i class="bi bi-trash"></i></button></td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-outline-primary btn-sm mb-3" id="addRow">Add Row</button>
+            </div>
+            <div class="caption-wrapper mb-4 text-center">
+                <p class="text-muted"><b>Disclaimer:</b> Users are advised to log into the instrument sheet before analysis and report any functionality that does not meet the agreed standards</p>
+                <p class="text-muted" id="section-location"><b>Section:</b> <span id="location-display">{{ worksheet.get('location', 'Location') }}</span></p>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">Submit Log</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+$(document).ready(function() {
+    // Update location display in real-time
+    $('#locationname').on('input', function() {
+        const locationValue = $(this).val().trim() || 'Location';
+        $('#location-display').text(locationValue);
+    });
+
+    // Initialize row count based on existing rows
+    let rowCount = {{ worksheet.get('log_entries', []) | length if worksheet else 1 }};
+
+    // Add new row
+    $('#addRow').click(function() {
+        rowCount++;
+        const newRow = `
+            <tr>
+                <td>${rowCount}</td>
+                <td><input type="date" class="form-control form-control-sm" name="date${rowCount}" required></td>
+                <td><input type="text" class="form-control form-control-sm" name="operator${rowCount}" required></td>
+                <td><input type="text" class="form-control form-control-sm" name="analysis${rowCount}" required></td>
+                <td><input type="number" class="form-control form-control-sm" name="samples${rowCount}" min="0"></td>
+                <td><input type="text" class="form-control form-control-sm" name="performance${rowCount}"></td>
+                <td><button type="button" class="btn btn-sm btn-danger remove-row"><i class="bi bi-trash"></i></button></td>
+            </tr>
+        `;
+        $('#logTable tbody').append(newRow);
+    });
+
+    // Remove row
+    $(document).on('click', '.remove-row', function() {
+        if ($('#logTable tbody tr').length > 1) {
+            $(this).closest('tr').remove();
+            // Update S/N
+            $('#logTable tbody tr').each(function(index) {
+                $(this).find('td:first').text(index + 1);
+            });
+            rowCount--;
+        }
+    });
+
+    // Client-side validation
+    $('#equipmentLogForm').on('submit', function(e) {
+        e.preventDefault();
+        const requiredFields = [
+            { id: 'equipmentname', label: 'Equipment Name' },
+            { id: 'locationname', label: 'Location' }
+        ];
+
+        let isValid = true;
+
+        // Validate equipment details
+        requiredFields.forEach(field => {
+            const input = document.querySelector(`input[name="${field.id}"]`);
+            if (!input.value.trim()) {
+                alert(`Please fill in the ${field.label} field.`);
+                input.focus();
+                isValid = false;
+                return;
+            }
+        });
+
+        // Validate log table rows
+        $('#logTable tbody tr').each(function(index) {
+            const rowNum = index + 1;
+            const rowFields = [
+                { name: `date${rowNum}`, label: 'Date' },
+                { name: `operator${rowNum}`, label: 'Operator' },
+                { name: `analysis${rowNum}`, label: 'Analysis Done' }
+            ];
+            rowFields.forEach(field => {
+                const input = document.querySelector(`input[name="${field.name}"]`);
+                if (!input.value.trim()) {
+                    alert(`Please fill in the ${field.label} field for row ${rowNum}.`);
+                    input.focus();
+                    isValid = false;
+                    return;
+                }
+            });
+            // Validate samples (if provided, must be non-negative)
+            const samplesInput = document.querySelector(`input[name="samples${rowNum}"]`);
+            if (samplesInput.value && samplesInput.value < 0) {
+                alert(`Number of Samples for row ${rowNum} must be non-negative.`);
+                samplesInput.focus();
+                isValid = false;
+                return;
+            }
+        });
+
+        if (isValid) {
+            this.submit();
+        }
+    });
+});
+</script>
+
+{% endblock %}

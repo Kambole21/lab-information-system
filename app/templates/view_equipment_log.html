@@ -1,0 +1,260 @@
+{% extends 'layouts.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='equipment_log.css') }}">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+@media print {
+    /* Set A4 portrait with minimal margins */
+    @page {
+        size: A4 portrait;
+        margin: 1cm;
+    }
+    /* Hide sidebar (assuming it's in layouts.html with a common class or ID like 'sidebar') */
+    .sidebar, [class*="sidebar"], [id*="sidebar"], nav {
+        display: none !important;
+    }
+    /* Hide buttons and flash messages */
+    .action-buttons, .alert {
+        display: none !important;
+    }
+    /* Ensure form content fits well in PDF */
+    .main-content {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+    }
+    .card {
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        padding: 0.5rem;
+    }
+    .table {
+        font-size: 8pt; /* Reduced font size for compact layout */
+        width: 100%;
+        table-layout: fixed; /* Ensure equal column widths */
+    }
+    .table th, .table td {
+        padding: 0.2rem; /* Reduced padding */
+        border: 1px solid #000 !important; /* Ensure table borders are visible */
+        word-wrap: break-word;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .table th {
+        font-weight: bold;
+    }
+    p, .form-control-static, .caption-wrapper p {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        font-size: 8pt;
+        margin: 0;
+    }
+    .form-label {
+        font-size: 8pt;
+        color: #000;
+    }
+    .intro {
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    /* Prevent page breaks within tables and sections */
+    .table, .table-responsive, .row, .intro, .caption-wrapper {
+        page-break-inside: avoid;
+    }
+}
+
+/* Modern button styles */
+.action-buttons .btn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease-in-out;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.action-buttons .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Specific button styles */
+.action-buttons .btn-back {
+    background-color: #6b7280; /* Neutral gray */
+    color: #fff;
+}
+
+.action-buttons .btn-back:hover {
+    background-color: #4b5563;
+}
+
+.action-buttons .btn-edit {
+    background-color: #f59e0b; /* Warning yellow for edit */
+    color: #fff;
+}
+
+.action-buttons .btn-edit:hover {
+    background-color: #d97706;
+}
+
+/* Dropdown button for downloads */
+.action-buttons .btn-download {
+    background-color: #0284c7; /* Blue for downloads */
+    color: #fff;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-buttons .btn-download:hover {
+    background-color: #026ba8;
+}
+
+.action-buttons .dropdown-menu {
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    min-width: 150px;
+}
+
+.action-buttons .dropdown-item {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.action-buttons .dropdown-item:hover {
+    background-color: #f1f5f9;
+}
+
+/* Icon styles */
+.action-buttons .bi {
+    font-size: 1rem;
+}
+
+/* Responsive button adjustments */
+@media (max-width: 500px) {
+    .action-buttons .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    .action-buttons .btn-download {
+        padding: 0.5rem;
+    }
+    .action-buttons {
+        flex-direction: column !important;
+        gap: 0.5rem;
+    }
+}
+</style>
+
+<main class="main-content p-4">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card p-4">
+        <div class="intro mb-2 text-center">
+            <header>
+                <p class="text-muted fw-bold"><u>EQUIPMENT OPERATION AND MAINTENANCE LOG</u></p>
+            </header>
+        </div>
+
+        <div class="row mb-2">
+            <table class="table table-bordered table-sm" id="infotable">
+                <tbody>
+                    <tr>
+                        <th><strong>Equipment Name:</strong> {{ worksheet.equipment_name | default('') }}</th>
+                        <th><strong>Location:</strong> {{ worksheet.location | default('') }}</th>
+                    </tr>
+                    <tr>
+                        <th><strong>Model No:</strong> {{ worksheet.model_no | default('') }}</th>
+                        <th><strong>Serial No:</strong> {{ worksheet.serial_no | default('') }}</th>
+                    </tr>
+                    <tr>
+                        <th><strong>Manufacturer:</strong> {{ worksheet.manufacturer | default('') }}</th>
+                        <th></th>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-responsive-lg mb-2">
+            <table id="logTable" class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>S/N</th>
+                        <th>Date</th>
+                        <th>Operator</th>
+                        <th>Analysis Done</th>
+                        <th>No. of Samples</th>
+                        <th>Instrument Performance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in worksheet.log_entries %}
+                        <tr>
+                            <td>{{ entry.serial_number }}</td>
+                            <td>{{ entry.date }}</td>
+                            <td>{{ entry.operator }}</td>
+                            <td>{{ entry.analysis_done }}</td>
+                            <td>{{ entry.no_of_samples | default('') }}</td>
+                            <td>{{ entry.instrument_performance | default('') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="caption-wrapper mb-2 text-center">
+            <p class="text-muted"><b>Disclaimer:</b> Users are advised to log into the instrument sheet before analysis and report any functionality that does not meet the agreed standards</p>
+            <p class="text-muted" id="section-location"><b>Section:</b> {{ worksheet.location | default('Location') }}</p>
+        </div>
+
+        <!-- Buttons -->
+        <div class="action-buttons d-flex justify-content-end gap-3">
+            <a href="{{ url_for('submit.submit') }}" class="btn btn-back">Back to Submission Page</a>
+            <a href="{{ url_for('equipment.equipment', id=worksheet.get('_id', '')) }}" class="btn btn-edit">Edit</a>
+            <div class="dropdown">
+                <button class="btn btn-download dropdown-toggle" type="button" id="downloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-download"></i>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
+                    <li><a class="dropdown-item" href="#" onclick="downloadPDF()"><i class="bi bi-file-earmark-pdf"></i> Download PDF</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('equipment.download_csv', id=worksheet.get('_id', '')) }}"><i class="bi bi-filetype-csv"></i> Download CSV</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+function downloadPDF() {
+    window.print();
+}
+</script>
+{% endblock %}

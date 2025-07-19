@@ -1,0 +1,101 @@
+{% extends "layouts.html" %}
+
+{% block content %}
+<head>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='lab_equip.css') }}">
+<title>Lab Equipment</title>
+    
+</head>
+<body>
+
+    <div class="lab-equipment-container my-5">
+    <h1 class="text-center mb-4 display-4 fw-bold text-agri-dark">Laboratory Equipment</h1>
+    <p class="text-center lead mb-5">Explore the essential tools used in our agricultural research laboratory, each designed to enhance precision and efficiency in our experiments.</p>
+
+    <div class="swiper mySwiper mb-5">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <div class="card shadow-lg border-0 h-100">
+                    <img src="{{url_for('static', filename=('images/spec.jpg'))}}" class="card-img-top" alt="Spectrophotometer">
+                    <div class="card-body">
+                        <h3 class="card-title fw-bold text-agri-dark">Spectrophotometer</h3>
+                        <p class="card-text">Measures the intensity of light absorbed by a sample, crucial for analyzing soil and plant nutrient content.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <div class="card shadow-lg border-0 h-100">
+                    <img src="{{url_for('static', filename=('images/centri.jpg'))}}" class="card-img-top" alt="Centrifuge">
+                    <div class="card-body">
+                        <h3 class="card-title fw-bold text-agri-dark">Centrifuge</h3>
+                        <p class="card-text">Separates components of a sample by spinning at high speeds, used for soil and plant tissue analysis.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <div class="card shadow-lg border-0 h-100">
+                    <img src="{{url_for('static', filename=('images/pcr.jpg'))}}" class="card-img-top" alt="PCR Machine">
+                    <div class="card-body">
+                        <h3 class="card-title fw-bold text-agri-dark">PCR Machine</h3>
+                        <p class="card-text">Amplifies DNA segments for genetic analysis of crops, aiding in disease and trait identification.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <div class="card shadow-lg border-0 h-100">
+                    <img src="{{url_for('static', filename=('images/microscope.jpg'))}}" class="card-img-top" alt="Microscope">
+                    <div class="card-body">
+                        <h3 class="card-title fw-bold text-agri-dark">Microscope</h3>
+                        <p class="card-text">Magnifies small samples for detailed observation of plant cells and soil microorganisms.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <div class="card shadow-lg border-0 h-100">
+                    <img src="{{url_for('static', filename=('images/auto.jpg'))}}" class="card-img-top" alt="Autoclave">
+                    <div class="card-body">
+                        <h3 class="card-title fw-bold text-agri-dark">Autoclave</h3>
+                        <p class="card-text">Sterilizes equipment and media using high-pressure steam, ensuring contamination-free experiments.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="swiper-button-next" aria-label="Next slide"></div>
+        <div class="swiper-button-prev" aria-label="Previous slide"></div>
+        <div class="swiper-pagination"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof Swiper !== 'undefined') {
+            var swiper = new Swiper('.mySwiper', {
+                slidesPerView: 3,
+                spaceBetween: 30,
+                loop: false, // Ensure this is false for your current setup
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+                breakpoints: {
+                    320: { slidesPerView: 1, spaceBetween: 10 },
+                    768: { slidesPerView: 2, spaceBetween: 20 },
+                    1024: { slidesPerView: 3, spaceBetween: 30 },
+                },
+            });
+        } else {
+            console.error('Swiper library failed to load.');
+        }
+    });
+</script>
+    
+</body>
+{% endblock %}

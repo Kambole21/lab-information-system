@@ -1,0 +1,434 @@
+{% extends 'layouts.html' %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='soil_analysis.css') }}">
+
+<main class="main-content p-4">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form id="soilAnalysisForm" class="card p-4" action="{{ url_for('soil.soil') }}" method="POST">
+        <div class="intro">
+            <span class="fs-4"><img src="{{url_for('static', filename = 'images/logo.png')}}"></span>
+            <header class="mb-4">
+                <p class="text-muted">National Agriculture Research Laboratories </p>
+                <p class="text-muted">Laboratory Analytical Services</p>
+                <h4 class="fw-bold">SOIL ANALYSIS REPORT</h4>
+            </header>
+        </div>
+        <!-- Metadata -->
+        <div class="row mb-4">
+            <div class="col-md-6 col-lg-3 mb-3">
+                <label for="labNumber" class="form-label">Lab #</label>
+                <input type="text" class="form-control" id="labNumber" name="labNumber" placeholder="Enter Lab #" required>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <label for="farmLocation" class="form-label">Location of Farm</label>
+                <input type="text" class="form-control" id="farmLocation" name="farmLocation" placeholder="Enter Farm Location" required>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <label for="dateReceived" class="form-label">Date Sample Received</label>
+                <input type="date" class="form-control" id="dateReceived" name="dateReceived" required>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <label for="dateReported" class="form-label">Date Sample Reported</label>
+                <input type="date" class="form-control" id="dateReported" name="dateReported" required>
+            </div>
+        </div>
+
+        <!-- Soil Analysis Table -->
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                                        <tr>
+                        <td>Field</td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="field1"></td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="field2"></td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="field3"></td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="field4"></td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="field5"></td>
+                    </tr>
+                    <tr>
+                        <td>Sample Reference</td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="sampleRef1"></td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="sampleRef2"></td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="sampleRef3"></td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="sampleRef4"></td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="sampleRef5"></td>
+                    </tr>
+                    <tr>
+                        <td>Soil Depth (cm)</td>
+                        <td colspan="2"><input type="number" step="0.1" min="0" class="form-control form-control-sm" name="soilDepth1"></td>
+                        <td colspan="2"><input type="number" step="0.1" min="0" class="form-control form-control-sm" name="soilDepth2"></td>
+                        <td colspan="2"><input type="number" step="0.1" min="0" class="form-control form-control-sm" name="soilDepth3"></td>
+                        <td colspan="2"><input type="number" step="0.1" min="0" class="form-control form-control-sm" name="soilDepth4"></td>
+                        <td colspan="2"><input type="number" step="0.1" min="0" class="form-control form-control-sm" name="soilDepth5"></td>
+                    </tr>
+                    <tr>
+                        <td>Lab No.</td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="labNo1"></td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="labNo2"></td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="labNo3"></td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="labNo4"></td>
+                        <td colspan="2"><input type="text" class="form-control form-control-sm" name="labNo5"></td>
+                    </tr>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Sample 1</th>
+                        <th></th>
+                        <th>Sample 2</th>
+                        <th></th>
+                        <th>Sample 3</th>
+                        <th></th>
+                        <th>Sample 4</th>
+                        <th></th>
+                        <th>Sample 5</th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th>Value</th>
+                        <th>Class</th>
+                        <th>Value</th>
+                        <th>Class</th>
+                        <th>Value</th>
+                        <th>Class</th>
+                        <th>Value</th>
+                        <th>Class</th>
+                        <th>Value</th>
+                        <th>Class</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Texture</td>
+                        <td><input type="text" class="form-control form-control-sm" name="textureValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="textureClass1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="textureValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="textureClass2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="textureValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="textureClass3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="textureValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="textureClass4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="textureValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="textureClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Soil pH</td>
+                        <td><input type="number" step="0.1" min="0" max="14" class="form-control form-control-sm" name="phValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phClass1"></td>
+                        <td><input type="number" step="0.1" min="0" max="14" class="form-control form-control-sm" name="phValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phClass2"></td>
+                        <td><input type="number" step="0.1" min="0" max="14" class="form-control form-control-sm" name="phValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phClass3"></td>
+                        <td><input type="number" step="0.1" min="0" max="14" class="form-control form-control-sm" name="phValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phClass4"></td>
+                        <td><input type="number" step="0.1" min="0" max="14" class="form-control form-control-sm" name="phValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Conductivity (µS/cm)</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="conductivityValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="conductivityClass1"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="conductivityValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="conductivityClass2"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="conductivityValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="conductivityClass3"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="conductivityValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="conductivityClass4"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="conductivityValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="conductivityClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Org. Carbon (%)</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="orgCarbonValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="orgCarbonClass1"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="orgCarbonValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="orgCarbonClass2"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="orgCarbonValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="orgCarbonClass3"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="orgCarbonValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="orgCarbonClass4"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="orgCarbonValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="orgCarbonClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Total Nitrogen (%)</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="nitrogenValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="nitrogenClass1"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="nitrogenValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="nitrogenClass2"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="nitrogenValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="nitrogenClass3"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="nitrogenValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="nitrogenClass4"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="nitrogenValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="nitrogenClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Phosphorus (Bray 1) (mg/kg)</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="phosphorusBrayValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusBrayClass1"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="phosphorusBrayValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusBrayClass2"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="phosphorusBrayValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusBrayClass3"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="phosphorusBrayValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusBrayClass4"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="phosphorusBrayValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusBrayClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Phosphorus (Olsen) (mg/kg)</td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusOlsenValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusOlsenClass1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusOlsenValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusOlsenClass2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusOlsenValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusOlsenClass3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusOlsenValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusOlsenClass4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusOlsenValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="phosphorusOlsenClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Potassium (mg/kg)</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="potassiumValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="potassiumClass1"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="potassiumValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="potassiumClass2"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="potassiumValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="potassiumClass3"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="potassiumValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="potassiumClass4"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="potassiumValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="potassiumClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Calcium (mg/kg)</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="calciumValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="calciumClass1"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="calciumValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="calciumClass2"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="calciumValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="calciumClass3"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="calciumValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="calciumClass4"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="calciumValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="calciumClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Magnesium (mg/kg)</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="magnesiumValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="magnesiumClass1"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="magnesiumValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="magnesiumClass2"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="magnesiumValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="magnesiumClass3"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="magnesiumValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="magnesiumClass4"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="magnesiumValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="magnesiumClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Copper (mg/kg)</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="copperValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="copperClass1"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="copperValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="copperClass2"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="copperValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="copperClass3"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="copperValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="copperClass4"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="copperValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="copperClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Manganese (mg/kg)</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="manganeseValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="manganeseClass1"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="manganeseValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="manganeseClass2"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="manganeseValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="manganeseClass3"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="manganeseValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="manganeseClass4"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="manganeseValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="manganeseClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Iron (mg/kg)</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ironValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="ironClass1"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ironValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="ironClass2"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ironValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="ironClass3"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ironValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="ironClass4"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ironValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="ironClass5"></td>
+                    </tr>
+                    <tr>
+                        <td>Zinc (mg/kg)</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="zincValue1"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="zincClass1"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="zincValue2"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="zincClass2"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="zincValue3"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="zincClass3"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="zincValue4"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="zincClass4"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="zincValue5"></td>
+                        <td><input type="text" class="form-control form-control-sm" name="zincClass5"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Signatures -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label for="analyzedBy1" class="form-label">Analyzed By (1)</label>
+                <input type="text" class="form-control" id="analyzedBy1" name="analyzedBy1" placeholder="Enter Name" required>
+                <label for="analyzedSignature1" class="form-label mt-2">Signature</label>
+                <input type="text" class="form-control" id="analyzedSignature1" name="analyzedSignature1" placeholder="Enter Signature">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="checkedBy1" class="form-label">Checked By (1)</label>
+                <input type="text" class="form-control" id="checkedBy1" name="checkedBy1" placeholder="Enter Name" required>
+                <label for="checkedSignature1" class="form-label mt-2">Signature</label>
+                <input type="text" class="form-control" id="checkedSignature1" name="checkedSignature1" placeholder="Enter Signature">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="analyzedBy2" class="form-label">Analyzed By (2)</label>
+                <input type="text" class="form-control" id="analyzedBy2" name="analyzedBy2" placeholder="Enter Name">
+                <label for="analyzedSignature2" class="form-label mt-2">Signature</label>
+                <input type="text" class="form-control" id="analyzedSignature2" name="analyzedSignature2" placeholder="Enter Signature">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="checkedBy2" class="form-label">Checked By (2)</label>
+                <input type="text" class="form-control" id="checkedBy2" name="checkedBy2" placeholder="Enter Name">
+                <label for="checkedSignature2" class="form-label mt-2">Signature</label>
+                <input type="text" class="form-control" id="checkedSignature2" name="checkedSignature2" placeholder="Enter Signature">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="analyzedBy3" class="form-label">Analyzed By (3)</label>
+                <input type="text" class="form-control" id="analyzedBy3" name="analyzedBy3" placeholder="Enter Name">
+                <label for="analyzedSignature3" class="form-label mt-2">Signature</label>
+                <input type="text" class="form-control" id="analyzedSignature3" name="analyzedSignature3" placeholder="Enter Signature">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="checkedBy3" class="form-label">Checked By (3)</label>
+                <input type="text" class="form-control" id="checkedBy3" name="checkedBy3" placeholder="Enter Name">
+                <label for="checkedSignature3" class="form-label mt-2">Signature</label>
+                <input type="text" class="form-control" id="checkedSignature3" name="checkedSignature3" placeholder="Enter Signature">
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">Submit Report</button>
+        </div>
+    </form>
+</main>
+
+<script>
+document.getElementById('soilAnalysisForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Client-side validation
+    const requiredFields = [
+        { id: 'labNumber', label: 'Lab #' },
+        { id: 'farmLocation', label: 'Farm Location' },
+        { id: 'dateReceived', label: 'Date Sample Received' },
+        { id: 'dateReported', label: 'Date Sample Reported' },
+        { id: 'analyzedBy1', label: 'Analyzed By (1)' },
+        { id: 'checkedBy1', label: 'Checked By (1)' }
+    ];
+
+    let isValid = true;
+
+    // Validate metadata and signatures
+    requiredFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (!input.value.trim()) {
+            alert(`Please fill in the ${field.label} field.`);
+            input.focus();
+            isValid = false;
+            return;
+        }
+    });
+
+    // Validate pH values (0-14)
+    for (let i = 1; i <= 5; i++) {
+        const pHInput = document.querySelector(`input[name="phValue${i}"]`);
+        if (pHInput.value && (pHInput.value < 0 || pHInput.value > 14)) {
+            alert(`Soil pH for Sample ${i} must be between 0 and 14.`);
+            pHInput.focus();
+            isValid = false;
+            return;
+        }
+    }
+
+    // Validate numeric fields (non-negative)
+    const numericFields = [
+        'soilDepth', 'conductivityValue', 'orgCarbonValue', 'nitrogenValue',
+        'phosphorusBrayValue', 'potassiumValue', 'calciumValue', 'magnesiumValue',
+        'copperValue', 'manganeseValue', 'ironValue', 'zincValue'
+    ];
+    for (let i = 1; i <= 5; i++) {
+        numericFields.forEach(field => {
+            const input = document.querySelector(`input[name="${field}${i}"]`);
+            if (input && input.value && input.value < 0) {
+                alert(`${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} for Sample ${i} must be non-negative.`);
+                input.focus();
+                isValid = false;
+                return;
+            }
+        });
+    }
+
+    // Ensure at least one sample has data
+    let hasSampleData = false;
+    for (let i = 1; i <= 5; i++) {
+        const fields = [
+            'field', 'sampleRef', 'soilDepth', 'labNo', 'textureValue', 'textureClass',
+            'phValue', 'phClass', 'conductivityValue', 'conductivityClass', 'orgCarbonValue',
+            'orgCarbonClass', 'nitrogenValue', 'nitrogenClass', 'phosphorusBrayValue',
+            'phosphorusBrayClass', 'phosphorusOlsenValue', 'phosphorusOlsenClass',
+            'potassiumValue', 'potassiumClass', 'calciumValue', 'calciumClass',
+            'magnesiumValue', 'magnesiumClass', 'copperValue', 'copperClass',
+            'manganeseValue', 'manganeseClass', 'ironValue', 'ironClass',
+            'zincValue', 'zincClass'
+        ];
+        for (const field of fields) {
+            const input = document.querySelector(`input[name="${field}${i}"]`);
+            if (input && input.value.trim()) {
+                hasSampleData = true;
+                break;
+            }
+        }
+        if (hasSampleData) break;
+    }
+    if (!hasSampleData) {
+        alert('Please provide data for at least one sample.');
+        isValid = false;
+    }
+
+    if (isValid) {
+        this.submit();
+    }
+});
+
+</script>
+{% endblock %}

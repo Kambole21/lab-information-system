@@ -1,0 +1,346 @@
+{% extends 'layouts.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='water_analysis.css') }}">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+@media print {
+    /* Hide sidebar (assuming it's in layouts.html with a common class or ID like 'sidebar') */
+    .sidebar, [class*="sidebar"], [id*="sidebar"], nav {
+        display: none !important;
+    }
+    /* Hide buttons and flash messages */
+    .action-buttons, .alert {
+        display: none !important;
+    }
+    /* Ensure form content fits well in PDF */
+    .main-content {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+    }
+    .card {
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        padding: 1rem;
+    }
+    .table {
+        font-size: 10pt;
+    }
+    .table th, .table td {
+        padding: 0.5rem;
+        border: 1px solid #000 !important; /* Ensure table borders are visible */
+    }
+    .form-control-static {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        font-size: 10pt;
+    }
+    .form-label {
+        font-size: 10pt;
+        color: #000;
+    }
+    .intro {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+}
+
+/* Modern button styles */
+.action-buttons .btn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease-in-out;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.action-buttons .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Specific button styles */
+.action-buttons .btn-back {
+    background-color: #6b7280; /* Neutral gray */
+    color: #fff;
+}
+
+.action-buttons .btn-back:hover {
+    background-color: #4b5563;
+}
+
+.action-buttons .btn-edit {
+    background-color: #f59e0b; /* Warning yellow for edit */
+    color: #fff;
+}
+
+.action-buttons .btn-edit:hover {
+    background-color: #d97706;
+}
+
+/* Dropdown button for downloads */
+.action-buttons .btn-download {
+    background-color: #0284c7; /* Blue for downloads */
+    color: #fff;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-buttons .btn-download:hover {
+    background-color: #026ba8;
+}
+
+.action-buttons .dropdown-menu {
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    min-width: 150px;
+}
+
+.action-buttons .dropdown-item {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.action-buttons .dropdown-item:hover {
+    background-color: #f1f5f9;
+}
+
+/* Icon styles */
+.action-buttons .bi {
+    font-size: 1rem;
+}
+
+/* Responsive button adjustments */
+@media (max-width: 500px) {
+    .action-buttons .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    .action-buttons .btn-download {
+        padding: 0.5rem;
+    }
+    .action-buttons {
+        flex-direction: column !important;
+        gap: 0.5rem;
+    }
+}
+</style>
+
+<main class="main-content p-4">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card p-4">
+        <div class="intro">
+            <span class="fs-4"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"></span>
+            <header class="mb-4">
+                <p class="text-muted fw-bold">National Agriculture Research Laboratories</p>
+                <p class="text-muted fw-bold">Laboratory Analytical Services</p>
+                <h4 class="fw-bold text-muted">WATER ANALYSIS REPORT</h4>
+            </header>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6 col-lg-3 mb-3">
+                <label class="form-label"><strong>Lab #:</strong></label>
+                <p class="form-control-static">{{ worksheet.lab_number | default('') }}</p>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <label class="form-label"><strong>Location of Farm:</strong></label>
+                <p class="form-control-static">{{ worksheet.farm_location | default('') }}</p>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <label class="form-label"><strong>Date Sample Received:</strong></label>
+                <p class="form-control-static">{{ worksheet.date_received | default('') }}</p>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <label class="form-label"><strong>Date Sample Reported:</strong></label>
+                <p class="form-control-static">{{ worksheet.date_reported | default('') }}</p>
+            </div>
+        </div>
+
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Sample 1</th>
+                        <th>Sample 2</th>
+                        <th>Sample 3</th>
+                        <th>Sample 4</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Sample Ref</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].sample_ref | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Lab #</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].lab_num | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>pH</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].pH | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Conductivity (µS/cm)</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].conductivity | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Total Dissolved Solids (mg/l)</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].tds | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Resistivity</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].resistivity | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Salinity (%)</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].salinity | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Sodium (me/l)</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].sodium | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Potassium (me/l)</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].potassium | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Calcium (me/l)</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].calcium | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Magnesium (me/l)</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].magnesium | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Carbonates (me/l)</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].carbonates | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Bicarbonates (me/l)</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].bicarbonates | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Chlorides (me/l)</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].chlorides | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Sulphates (me/l)</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].sulphates | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Sodium Absorption Ratio</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].sar | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Salinity/Sodium Class</td>
+                        {% for i in range(4) %}
+                            <td>{{ worksheet.samples[i].salinity_class | default('') }}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><strong>Analyzed By:</strong></label>
+                <p class="form-control-static">{{ worksheet.analyzed_by | default('') }}</p>
+                <label class="form-label mt-2"><strong>Signature:</strong></label>
+                <p class="form-control-static">{{ worksheet.analyzed_signature | default('') }}</p>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label"><strong>Checked By:</strong></label>
+                <p class="form-control-static">{{ worksheet.checked_by | default('') }}</p>
+                <label class="form-label mt-2"><strong>Signature:</strong></label>
+                <p class="form-control-static">{{ worksheet.checked_signature | default('') }}</p>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="action-buttons d-flex justify-content-end gap-3">
+            <a href="{{ url_for('submit.submit') }}" class="btn btn-back">Back to Submission Page</a>
+            <a href="{{ url_for('water_analysis.water_analysis', id=worksheet.get('_id', '')) }}" class="btn btn-edit">Edit</a>
+            <div class="dropdown">
+                <button class="btn btn-download dropdown-toggle" type="button" id="downloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-download"></i>
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
+                    <li><a class="dropdown-item" href="#" onclick="downloadPDF()"><i class="bi bi-file-earmark-pdf"></i> Download PDF</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('water_analysis.download_csv', id=worksheet.get('_id', '')) }}"><i class="bi bi-filetype-csv"></i> Download CSV</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+function downloadPDF() {
+    window.print();
+}
+</script>
+{% endblock %}

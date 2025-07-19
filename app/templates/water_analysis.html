@@ -1,0 +1,215 @@
+{% extends 'layouts.html' %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='water_analysis.css') }}">
+
+<main class="main-content p-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show no-print" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form id="waterAnalysisForm" class="card p-4" action="{{ url_for('water_analysis.water_analysis') }}" method="POST">
+        {% if worksheet.get('_id', '') %}
+            <input type="hidden" name="id" value="{{ worksheet._id }}">
+        {% endif %}
+
+        <div class="d-flex align-items-center mb-3">
+            <!-- Download Icon with Dropdown -->
+            <div class="dropdown me-3 no-print">
+                <a href="#" class="download-icon" data-bs-toggle="dropdown" aria-expanded="false">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" onclick="downloadPDF()">Download as PDF</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('water_analysis.download_csv', id=worksheet.get('_id', '')) }}">Download as CSV</a></li>
+                </ul>
+            </div>
+
+            <div class="intro flex-grow-1">
+                <span class="fs-4"><img src="{{ url_for('static', filename='images/logo.png') }}"></span>
+                <header class="mb-4">
+                    <p class="text-muted fw-bold">National Agriculture Research Laboratories</p>
+                    <p class="text-muted fw-bold">Laboratory Analytical Services</p>
+                    <h4 class="fw-bold text-muted">WATER ANALYSIS REPORT</h4>
+                </header>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6 col-lg-3 mb-3">
+                <label for="labNumber" class="form-label"><strong>LAB#:</strong></label>
+                <input type="text" class="form-control" id="labNumber" name="labNumber" value="{{ worksheet.lab_number | default('') }}" required>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <label for="farmLocation" class="form-label"><strong>LOCATION OF FARM:</strong></label>
+                <input type="text" class="form-control" id="farmLocation" name="farmLocation" value="{{ worksheet.farm_location | default('') }}" required>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <label for="dateReceived" class="form-label"><strong>DATE SAMPLE RECEIVED:</strong></label>
+                <input type="date" class="form-control" id="dateReceived" name="dateReceived" value="{{ worksheet.date_received | default('') }}" required>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-3">
+                <label for="dateReported" class="form-label"><strong>DATE SAMPLE REPORTED:</strong></label>
+                <input type="date" class="form-control" id="dateReported" name="dateReported" value="{{ worksheet.date_reported | default('') }}" required>
+            </div>
+        </div>
+
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Sample 1</th>
+                        <th>Sample 2</th>
+                        <th>Sample 3</th>
+                        <th>Sample 4</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% set fields = [
+                        ('Sample Ref', 'sample_ref', 'sampleRef'),
+                        ('Lab #', 'lab_num', 'labNum'),
+                        ('pH', 'pH', 'pH'),
+                        ('Conductivity (\u00B5S/cm)', 'conductivity', 'conductivity'),
+                        ('Total Dissolved Solids (mg/l)', 'tds', 'tds'),
+                        ('Resistivity', 'resistivity', 'resistivity'),
+                        ('Salinity (%)', 'salinity', 'salinity'),
+                        ('Sodium (me/l)', 'sodium', 'sodium'),
+                        ('Potassium (me/l)', 'potassium', 'potassium'),
+                        ('Calcium (me/l)', 'calcium', 'calcium'),
+                        ('Magnesium (me/l)', 'magnesium', 'magnesium'),
+                        ('Carbonates (me/l)', 'carbonates', 'carbonates'),
+                        ('Bicarbonates (me/l)', 'bicarbonates', 'bicarbonates'),
+                        ('Chlorides (me/l)', 'chlorides', 'chlorides'),
+                        ('Sulphates (me/l)', 'sulphates', 'sulphates'),
+                        ('Sodium Absorption Ratio', 'sar', 'sar'),
+                        ('Salinity/Sodium Class', 'salinity_class', 'salinityClass')
+                    ] %}
+                    {% for label, field_key, input_name in fields %}
+                    <tr>
+                        <td>{{ label }}</td>
+                        {% for i in range(4) %}
+                            <td>
+                                <input type="text" class="form-control form-control-sm" name="{{ input_name }}{{ i + 1 }}" value="{{ worksheet.samples[i][field_key] | default('') }}">
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="analyzedBy" class="form-label"><strong>Analyzed By:</strong></label>
+                <input type="text" class="form-control" id="analyzedBy" name="analyzedBy" value="{{ worksheet.analyzed_by | default('') }}">
+                <label for="analyzedSignature" class="form-label mt-2"><strong>Signature:</strong></label>
+                <input type="text" class="form-control" id="analyzedSignature" name="analyzedSignature" value="{{ worksheet.analyzed_signature | default('') }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="checkedBy" class="form-label"><strong>Checked By:</strong></label>
+                <input type="text" class="form-control" id="checkedBy" name="checkedBy" value="{{ worksheet.checked_by | default('') }}">
+                <label for="checkedSignature" class="form-label mt-2"><strong>Signature:</strong></label>
+                <input type="text" class="form-control" id="checkedSignature" name="checkedSignature" value="{{ worksheet.checked_signature | default('') }}">
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end no-print">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmSubmitModal">Submit Report</button>
+        </div>
+    </form>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade no-print" id="confirmSubmitModal" tabindex="-1" aria-labelledby="confirmSubmitModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmSubmitModalLabel">Confirm Submission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Please add a comment for the submission (optional):</p>
+                    <textarea class="form-control" id="submissionComment" name="comment" rows="4"></textarea>
+                    <p class="mt-3">Are you sure you want to submit the Water Analysis Report?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmSubmitBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.getElementById('confirmSubmitBtn').addEventListener('click', function() {
+        const form = document.getElementById('waterAnalysisForm');
+        
+        // Client-side validation
+        const labNumber = document.getElementById('labNumber').value;
+        const farmLocation = document.getElementById('farmLocation').value;
+        const dateReceived = document.getElementById('dateReceived').value;
+        const dateReported = document.getElementById('dateReported').value;
+
+        if (!labNumber || !farmLocation || !dateReceived || !dateReported) {
+            alert('Please fill in all required fields (Lab#, Location of Farm, Date Received, Date Reported).');
+            return;
+        }
+
+        // Check if at least one sample has data (excluding sample_ref, lab_num, salinity_class)
+        const hasSampleData = Array.from({length: 4}, (_, i) => {
+            return ['pH', 'conductivity', 'tds', 'resistivity', 'salinity', 'sodium', 'potassium', 'calcium', 'magnesium', 'carbonates', 'bicarbonates', 'chlorides', 'sulphates', 'sar'].some(field => {
+                return document.querySelector(`input[name="${field}${i + 1}"]`).value.trim() !== '';
+            });
+        }).some(Boolean);
+
+        if (!hasSampleData) {
+            alert('At least one sample must have data.');
+            return;
+        }
+
+        const comment = document.getElementById('submissionComment').value;
+        const formData = new FormData(form);
+        formData.append('comment', comment);
+
+        // Submit the form
+        fetch(form.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (response.ok) {
+                window.location.href = "{{ url_for('submit.submit') }}";
+            } else {
+                return response.json().then(data => {
+                    console.error('Error response:', data);
+                    alert(data.error || 'Failed to submit the report. Please check the console for details.');
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            alert('Error submitting the report: ' + error.message);
+        });
+
+        // Close the modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmSubmitModal'));
+        modal.hide();
+    });
+
+    function downloadPDF() {
+        window.print();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,563 @@
+{% extends 'layouts.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='soil_analysis.css') }}">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+@media print {
+    /* Hide sidebar (assuming it's in layouts.html with a common class or ID like 'sidebar') */
+    .sidebar, [class*="sidebar"], [id*="sidebar"], nav {
+        display: none !important;
+    }
+    /* Hide buttons */
+    .action-buttons {
+        display: none !important;
+    }
+    /* Ensure form content fits well in PDF */
+    .main-content {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+    }
+    .card {
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        padding: 1rem;
+    }
+    .table {
+        font-size: 10pt;
+    }
+    .table input.form-control {
+        border: none !important; /* Remove borders for inputs in table */
+        background-color: #fff;
+        padding: 0.2rem;
+    }
+    input.form-control:not(.table input) {
+        border: none !important; /* Remove borders for non-table inputs */
+        padding: 0.2rem;
+    }
+    .form-label {
+        font-size: 10pt;
+        color: #000;
+    }
+    .intro {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    /* Ensure flash messages are hidden */
+    .alert {
+        display: none !important;
+    }
+}
+
+/* Modern button styles */
+.action-buttons .btn {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease-in-out;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-buttons .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.action-buttons .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Specific button styles */
+.action-buttons .btn-back {
+    background-color: #6b7280; /* Neutral gray */
+    color: #fff;
+}
+
+.action-buttons .btn-back:hover {
+    background-color: #4b5563;
+}
+
+.action-buttons .btn-save {
+    background-color: #4caf50; /* Match existing green theme */
+    color: #fff;
+}
+
+.action-buttons .btn-save:hover {
+    background-color: #388e3c;
+}
+
+/* Dropdown button for downloads */
+.action-buttons .btn-download {
+    background-color: #0284c7; /* Blue for downloads */
+    color: #fff;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-buttons .btn-download:hover {
+    background-color: #026ba8;
+}
+
+.action-buttons .dropdown-menu {
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    min-width: 150px;
+}
+
+.action-buttons .dropdown-item {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.action-buttons .dropdown-item:hover {
+    background-color: #f1f5f9;
+}
+
+/* Icon styles */
+.action-buttons .bi {
+    font-size: 1rem;
+}
+
+/* Responsive button adjustments */
+@media (max-width: 500px) {
+    .action-buttons .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    .action-buttons .btn-download {
+        padding: 0.5rem;
+    }
+    .action-buttons {
+        flex-direction: column !important;
+        gap: 0.5rem;
+    }
+}
+</style>
+
+<main class="main-content p-4">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card p-4">
+        <div class="intro">
+            <span class="fs-4"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo"></span>
+            <header class="mb-4">
+                <p class="text-muted">National Agriculture Research Laboratories</p>
+                <p class="text-muted">Laboratory Analytical Services</p>
+                <h4 class="fw-bold">SOIL ANALYSIS REPORT</h4>
+            </header>
+        </div>
+
+        <!-- Form for Viewing and Editing -->
+        <form id="soilAnalysisForm" action="{{ url_for('submit.edit_worksheet', id=worksheet['_id'], collection='Soil Analysis Report Form') }}" method="POST">
+            <!-- Metadata -->
+            <div class="row mb-4">
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <label for="labNumber" class="form-label">Lab #</label>
+                    <input type="text" class="form-control" id="labNumber" name="lab_number" value="{{ worksheet.lab_number | default('') }}" required>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <label for="farmLocation" class="form-label">Location of Farm</label>
+                    <input type="text" class="form-control" id="farmLocation" name="farm_location" value="{{ worksheet.farm_location | default('') }}" required>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <label for="dateReceived" class="form-label">Date Sample Received</label>
+                    <input type="date" class="form-control" id="dateReceived" name="date_received" value="{{ worksheet.date_received | default('') }}" required>
+                </div>
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <label for="dateReported" class="form-label">Date Sample Reported</label>
+                    <input type="date" class="form-control" id="dateReported" name="date_reported" value="{{ worksheet.date_reported | default('') }}" required>
+                </div>
+            </div>
+
+            <!-- Soil Analysis Table -->
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <td>Field</td>
+                            {% for i in range(1, 6) %}
+                                <td colspan="2"><input type="text" class="form-control form-control-sm" name="field{{ i }}" value="{{ worksheet.samples[i-1].field | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Sample Reference</td>
+                            {% for i in range(1, 6) %}
+                                <td colspan="2"><input type="text" class="form-control form-control-sm" name="sampleRef{{ i }}" value="{{ worksheet.samples[i-1].sample_ref | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Soil Depth (cm)</td>
+                            {% for i in range(1, 6) %}
+                                <td colspan="2"><input type="number" step="0.1" min="0" class="form-control form-control-sm" name="soilDepth{{ i }}" value="{{ worksheet.samples[i-1].soil_depth | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Lab No.</td>
+                            {% for i in range(1, 6) %}
+                                <td colspan="2"><input type="text" class="form-control form-control-sm" name="labNo{{ i }}" value="{{ worksheet.samples[i-1].lab_no | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <th>Parameter</th>
+                            {% for i in range(1, 6) %}
+                                <th>Sample {{ i }}</th>
+                                <th></th>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <th></th>
+                            {% for i in range(1, 6) %}
+                                <th>Value</th>
+                                <th>Class</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Texture</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="text" class="form-control form-control-sm" name="textureValue{{ i }}" value="{{ worksheet.samples[i-1].texture.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="textureClass{{ i }}" value="{{ worksheet.samples[i-1].texture.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Soil pH</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="number" step="0.1" min="0" max="14" class="form-control form-control-sm" name="phValue{{ i }}" value="{{ worksheet.samples[i-1].ph.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="phClass{{ i }}" value="{{ worksheet.samples[i-1].ph.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Conductivity (µS/cm)</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="conductivityValue{{ i }}" value="{{ worksheet.samples[i-1].conductivity.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="conductivityClass{{ i }}" value="{{ worksheet.samples[i-1].conductivity.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Org. Carbon (%)</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="orgCarbonValue{{ i }}" value="{{ worksheet.samples[i-1].org_carbon.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="orgCarbonClass{{ i }}" value="{{ worksheet.samples[i-1].org_carbon.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Total Nitrogen (%)</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="nitrogenValue{{ i }}" value="{{ worksheet.samples[i-1].nitrogen.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="nitrogenClass{{ i }}" value="{{ worksheet.samples[i-1].nitrogen.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Phosphorus (Bray 1) (mg/kg)</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="phosphorusBrayValue{{ i }}" value="{{ worksheet.samples[i-1].phosphorus_bray.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="phosphorusBrayClass{{ i }}" value="{{ worksheet.samples[i-1].phosphorus_bray.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Phosphorus (Olsen) (mg/kg)</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="text" class="form-control form-control-sm" name="phosphorusOlsenValue{{ i }}" value="{{ worksheet.samples[i-1].phosphorus_olsen.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="phosphorusOlsenClass{{ i }}" value="{{ worksheet.samples[i-1].phosphorus_olsen.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Potassium (mg/kg)</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="potassiumValue{{ i }}" value="{{ worksheet.samples[i-1].potassium.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="potassiumClass{{ i }}" value="{{ worksheet.samples[i-1].potassium.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Calcium (mg/kg)</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="calciumValue{{ i }}" value="{{ worksheet.samples[i-1].calcium.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="calciumClass{{ i }}" value="{{ worksheet.samples[i-1].calcium.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Magnesium (mg/kg)</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="magnesiumValue{{ i }}" value="{{ worksheet.samples[i-1].magnesium.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="magnesiumClass{{ i }}" value="{{ worksheet.samples[i-1].magnesium.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Copper (mg/kg)</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="copperValue{{ i }}" value="{{ worksheet.samples[i-1].copper.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="copperClass{{ i }}" value="{{ worksheet.samples[i-1].copper.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Manganese (mg/kg)</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="manganeseValue{{ i }}" value="{{ worksheet.samples[i-1].manganese.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="manganeseClass{{ i }}" value="{{ worksheet.samples[i-1].manganese.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Iron (mg/kg)</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ironValue{{ i }}" value="{{ worksheet.samples[i-1].iron.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="ironClass{{ i }}" value="{{ worksheet.samples[i-1].iron.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Zinc (mg/kg)</td>
+                            {% for i in range(1, 6) %}
+                                <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="zincValue{{ i }}" value="{{ worksheet.samples[i-1].zinc.value | default('') }}"></td>
+                                <td><input type="text" class="form-control form-control-sm" name="zincClass{{ i }}" value="{{ worksheet.samples[i-1].zinc.class | default('') }}"></td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Signatures -->
+            <div class="row mb-4">
+                {% for i in range(1, 4) %}
+                    <div class="col-md-6 mb-3">
+                        <label for="analyzedBy{{ i }}" class="form-label">Analyzed By ({{ i }})</label>
+                        <input type="text" class="form-control" id="analyzedBy{{ i }}" name="analyzedBy{{ i }}" value="{{ worksheet.analyzed_by[i-1].name | default('') }}" {% if i == 1 %}required{% endif %}>
+                        <label for="analyzedSignature{{ i }}" class="form-label mt-2">Signature</label>
+                        <input type="text" class="form-control" id="analyzedSignature{{ i }}" name="analyzedSignature{{ i }}" value="{{ worksheet.analyzed_by[i-1].signature | default('') }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="checkedBy{{ i }}" class="form-label">Checked By ({{ i }})</label>
+                        <input type="text" class="form-control" id="checkedBy{{ i }}" name="checkedBy{{ i }}" value="{{ worksheet.checked_by[i-1].name | default('') }}" {% if i == 1 %}required{% endif %}>
+                        <label for="checkedSignature{{ i }}" class="form-label mt-2">Signature</label>
+                        <input type="text" class="form-control" id="checkedSignature{{ i }}" name="checkedSignature{{ i }}" value="{{ worksheet.checked_by[i-1].signature | default('') }}">
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Comment Section -->
+            <div class="mb-4">
+                <label for="comment" class="form-label">Comment</label>
+                <textarea class="form-control" id="comment" name="comment" rows="4">{{ worksheet.comment | default('') }}</textarea>
+            </div>
+
+            <!-- Buttons -->
+            <div class="action-buttons d-flex justify-content-end gap-3">
+                <button type="button" class="btn btn-back" onclick="window.location.href='{{ url_for('submit.submit') }}'">Back to Files</button>
+                <button type="submit" class="btn btn-save">Save Changes</button>
+                <div class="dropdown">
+                    <button class="btn btn-download dropdown-toggle" type="button" id="downloadDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-download"></i>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="downloadDropdown">
+                        <li><a class="dropdown-item" href="#" onclick="downloadPDF()"><i class="bi bi-file-earmark-pdf"></i> Download PDF</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="downloadCSV()"><i class="bi bi-filetype-csv"></i> Download CSV</a></li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+document.getElementById('soilAnalysisForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Client-side validation
+    const requiredFields = [
+        { id: 'labNumber', label: 'Lab #' },
+        { id: 'farmLocation', label: 'Farm Location' },
+        { id: 'dateReceived', label: 'Date Sample Received' },
+        { id: 'dateReported', label: 'Date Sample Reported' },
+        { id: 'analyzedBy1', label: 'Analyzed By (1)' },
+        { id: 'checkedBy1', label: 'Checked By (1)' }
+    ];
+
+    let isValid = true;
+
+    // Validate metadata and signatures
+    requiredFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (!input.value.trim()) {
+            alert(`Please fill in the ${field.label} field.`);
+            input.focus();
+            isValid = false;
+            return;
+        }
+    });
+
+    // Validate pH values (0-14)
+    for (let i = 1; i <= 5; i++) {
+        const pHInput = document.querySelector(`input[name="phValue${i}"]`);
+        if (pHInput.value && (pHInput.value < 0 || pHInput.value > 14)) {
+            alert(`Soil pH for Sample ${i} must be between 0 and 14.`);
+            pHInput.focus();
+            isValid = false;
+            return;
+        }
+    }
+
+    // Validate numeric fields (non-negative)
+    const numericFields = [
+        'soilDepth', 'conductivityValue', 'orgCarbonValue', 'nitrogenValue',
+        'phosphorusBrayValue', 'potassiumValue', 'calciumValue', 'magnesiumValue',
+        'copperValue', 'manganeseValue', 'ironValue', 'zincValue'
+    ];
+    for (let i = 1; i <= 5; i++) {
+        numericFields.forEach(field => {
+            const input = document.querySelector(`input[name="${field}${i}"]`);
+            if (input && input.value && input.value < 0) {
+                alert(`${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} for Sample ${i} must be non-negative.`);
+                input.focus();
+                isValid = false;
+                return;
+            }
+        });
+    }
+
+    // Ensure at least one sample has data
+    let hasSampleData = false;
+    for (let i = 1; i <= 5; i++) {
+        const fields = [
+            'field', 'sampleRef', 'soilDepth', 'labNo', 'textureValue', 'textureClass',
+            'phValue', 'phClass', 'conductivityValue', 'conductivityClass', 'orgCarbonValue',
+            'orgCarbonClass', 'nitrogenValue', 'nitrogenClass', 'phosphorusBrayValue',
+            'phosphorusBrayClass', 'phosphorusOlsenValue', 'phosphorusOlsenClass',
+            'potassiumValue', 'potassiumClass', 'calciumValue', 'calciumClass',
+            'magnesiumValue', 'magnesiumClass', 'copperValue', 'copperClass',
+            'manganeseValue', 'manganeseClass', 'ironValue', 'ironClass',
+            'zincValue', 'zincClass'
+        ];
+        for (const field of fields) {
+            const input = document.querySelector(`input[name="${field}${i}"]`);
+            if (input && input.value.trim()) {
+                hasSampleData = true;
+                break;
+            }
+        }
+        if (hasSampleData) break;
+    }
+    if (!hasSampleData) {
+        alert('Please provide data for at least one sample.');
+        isValid = false;
+    }
+
+    if (isValid) {
+        this.submit();
+    }
+});
+
+// Function to trigger PDF download via print
+function downloadPDF() {
+    window.print();
+}
+
+// Function to generate and download CSV
+function downloadCSV() {
+    // Collect metadata
+    const labNumber = document.getElementById('labNumber').value;
+    const farmLocation = document.getElementById('farmLocation').value;
+    const dateReceived = document.getElementById('dateReceived').value;
+    const dateReported = document.getElementById('dateReported').value;
+
+    // Collect analyzed_by and checked_by
+    let analyzedBy = [];
+    let checkedBy = [];
+    for (let i = 1; i <= 3; i++) {
+        const analyzedName = document.getElementById(`analyzedBy${i}`).value;
+        const analyzedSignature = document.getElementById(`analyzedSignature${i}`).value;
+        const checkedName = document.getElementById(`checkedBy${i}`).value;
+        const checkedSignature = document.getElementById(`checkedSignature${i}`).value;
+        if (analyzedName) analyzedBy.push(`${analyzedName} (${analyzedSignature || ''})`);
+        if (checkedName) checkedBy.push(`${checkedName} (${checkedSignature || ''})`);
+    }
+
+    // Collect comment
+    const comment = document.getElementById('comment').value;
+
+    // CSV headers
+    let csvContent = [
+        ['Lab #', labNumber],
+        ['Farm Location', farmLocation],
+        ['Date Received', dateReceived],
+        ['Date Reported', dateReported],
+        ['Analyzed By', analyzedBy.join('; ')],
+        ['Checked By', checkedBy.join('; ')],
+        ['Comment', comment],
+        [], // Empty row for separation
+        ['Parameter', 'Sample 1 Value', 'Sample 1 Class', 'Sample 2 Value', 'Sample 2 Class', 'Sample 3 Value', 'Sample 3 Class', 'Sample 4 Value', 'Sample 4 Class', 'Sample 5 Value', 'Sample 5 Class']
+    ];
+
+    // Collect sample data
+    const parameters = [
+        { name: 'Field', key: 'field' },
+        { name: 'Sample Reference', key: 'sampleRef' },
+        { name: 'Soil Depth (cm)', key: 'soilDepth' },
+        { name: 'Lab No.', key: 'labNo' },
+        { name: 'Texture', key: 'texture' },
+        { name: 'Soil pH', key: 'ph' },
+        { name: 'Conductivity (µS/cm)', key: 'conductivity' },
+        { name: 'Org. Carbon (%)', key: 'orgCarbon' },
+        { name: 'Total Nitrogen (%)', key: 'nitrogen' },
+        { name: 'Phosphorus (Bray 1) (mg/kg)', key: 'phosphorusBray' },
+        { name: 'Phosphorus (Olsen) (mg/kg)', key: 'phosphorusOlsen' },
+        { name: 'Potassium (mg/kg)', key: 'potassium' },
+        { name: 'Calcium (mg/kg)', key: 'calcium' },
+        { name: 'Magnesium (mg/kg)', key: 'magnesium' },
+        { name: 'Copper (mg/kg)', key: 'copper' },
+        { name: 'Manganese (mg/kg)', key: 'manganese' },
+        { name: 'Iron (mg/kg)', key: 'iron' },
+        { name: 'Zinc (mg/kg)', key: 'zinc' }
+    ];
+
+    parameters.forEach(param => {
+        let row = [param.name];
+        for (let i = 1; i <= 5; i++) {
+            const valueInput = document.querySelector(`input[name="${param.key}Value${i}"]`);
+            const classInput = document.querySelector(`input[name="${param.key}Class${i}"]`);
+            const value = valueInput ? valueInput.value : (document.querySelector(`input[name="${param.key}${i}"]`)?.value || '');
+            const classValue = classInput ? classInput.value : '';
+            row.push(value, classValue);
+        }
+        csvContent.push(row);
+    });
+
+    // Convert to CSV string
+    const csvString = csvContent.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')).join('\n');
+
+    // Create and download CSV
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `soil_analysis_${labNumber || 'report'}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

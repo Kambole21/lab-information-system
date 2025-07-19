@@ -1,0 +1,186 @@
+{% extends 'layouts.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        .modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal.show {
+            opacity: 1;
+            display: flex;
+        }
+        .modal.hidden {
+            opacity: 0;
+            display: none;
+        }
+        .dropdown-menu {
+            display: none;
+            min-width: 120px;
+            z-index: 10;
+        }
+        .dropdown-menu.show {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <main class="container mx-auto p-4 max-w-7xl">
+        <!-- Header Section -->
+        <header class="bg-white rounded-lg shadow-md p-6 mb-6 flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">My Files</h1>
+            {% if user %}
+            <div class="mt-4 md:mt-0 bg-gray-200 rounded-lg p-4 flex items-center space-x-4">
+                <div>
+                    <p class="text-sm font-semibold text-blue-600">{{ user.first_name }} {{ user.last_name }}</p>
+                    <p class="text-xs text-gray-600 capitalize">{{ user.role }}</p>
+                    <p class="text-xs text-gray-600">{{ user.profession }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </header>
+
+        <!-- Worksheets Table -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Your Worksheets</h2>
+            {% if worksheets %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-600">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 font-medium text-gray-800">Title</th>
+                            <th class="px-4 py-3 font-medium text-gray-800">Date</th>
+                            <th class="px-4 py-3 font-medium text-gray-800">Created By</th>
+                            <th class="px-4 py-3 font-medium text-gray-800">Comment</th>
+                            <th class="px-4 py-3 font-medium text-gray-800">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for worksheet in worksheets %}
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-3">{{ worksheet.title }}</td>
+                            <td class="px-4 py-3">{{ worksheet.date }}</td>
+                            <td class="px-4 py-3">{{ worksheet.created_by }}</td>
+                            <td class="px-4 py-3">{{ worksheet.comment }}</td>
+                            <td class="px-4 py-3 relative">
+                                <button class="text-gray-600 hover:text-gray-800 focus:outline-none" onclick="toggleDropdown('dropdown-{{ worksheet.id }}')">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <div id="dropdown-{{ worksheet.id }}" class="dropdown-menu absolute right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
+                                    {% if worksheet.collection == 'Water Analysis Report' %}
+                                        <a href="{{ url_for('water_analysis.view_water_analysis', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('water_analysis.edit_water_analysis', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% elif worksheet.collection == 'Equipment Operation Log Book' %}
+                                        <a href="{{ url_for('equipment.view_equipment_log', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('equipment.equipment', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% elif worksheet.collection == 'Trace Worksheet Form' %}
+                                        <a href="{{ url_for('trace.view_trace_worksheet', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('trace.trace', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% elif worksheet.collection == 'Water Analysis Worksheet' %}
+                                        <a href="{{ url_for('water_worksheet.view_water_worksheet', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('water_worksheet.water_worksheet', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% elif worksheet.collection == 'Organic Carbon & Nitrogen Worksheet' %}
+                                        <a href="{{ url_for('organic_carbon_nitrogen.view_ocn', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('organic_carbon_nitrogen.organic_carbon_nitrogen', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% elif worksheet.collection == 'pH, Phosphorus, Bases & Traces Worksheet' %}
+                                        <a href="{{ url_for('ph_bases.view_ph', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('ph_bases.ph_bases', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% elif worksheet.collection == 'Soil Analysis Report Form' %}
+                                        <a href="{{ url_for('soil.view_soil', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('soil.edit_soil', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% else %}
+                                        <a href="{{ url_for('submit.view_worksheet', id=worksheet.id, collection=worksheet.collection) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
+                                        <a href="{{ url_for('submit.edit_worksheet', id=worksheet.id, collection=worksheet.collection) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                    {% endif %}
+                                    <button onclick="showDeleteModal('{{ worksheet.id }}', '{{ worksheet.collection }}', '{{ worksheet.title }}')" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-gray-600">No worksheets found.</p>
+            {% endif %}
+        </section>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white rounded-lg p-6 max-w-md w-full">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Confirm Deletion</h3>
+                <p class="text-gray-600 mb-6">Are you sure you want to delete "<span id="worksheetTitle"></span>"? This action cannot be undone.</p>
+                <div class="flex justify-end space-x-3">
+                    <button id="cancelDelete" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition">Cancel</button>
+                    <button id="confirmDelete" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">Delete</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleDropdown(id) {
+            const dropdown = document.getElementById(id);
+            const isShown = dropdown.classList.contains('show');
+            // Close all dropdowns
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                menu.classList.remove('show');
+            });
+            // Toggle the clicked dropdown
+            if (!isShown) {
+                dropdown.classList.add('show');
+            }
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function closeDropdown(event) {
+                if (!dropdown.contains(event.target) && !event.target.closest('button')) {
+                    dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            });
+        }
+
+        function showDeleteModal(id, collection, title) {
+            document.getElementById('worksheetTitle').textContent = title;
+            document.getElementById('deleteModal').classList.remove('hidden');
+            document.getElementById('deleteModal').classList.add('show');
+
+            const confirmButton = document.getElementById('confirmDelete');
+            confirmButton.onclick = function() {
+                fetch(`/delete_worksheet/${id}/${encodeURIComponent(collection)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                    hideDeleteModal();
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                    hideDeleteModal();
+                });
+            };
+        }
+
+        function hideDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
+
+        document.getElementById('cancelDelete').addEventListener('click', hideDeleteModal);
+    </script>
+</body>
+</html>
+{% endblock %}

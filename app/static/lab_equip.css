@@ -1,0 +1,262 @@
+/* lab_equip.css */
+
+/* Google Fonts - Import Roboto for consistent typography */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+/* Custom color palette */
+:root {
+    --agri-dark: #1b5e20; /* A dark green for headings/accents */
+    --agri-medium: #388e3c; /* A slightly lighter green for hover states */
+    --agri-light: #e8f5e9; /* A very light green for backgrounds */
+    --text-dark: #333;
+    --text-medium: #555;
+    --text-light: #777;
+    --card-bg: #fff;
+    --shadow-light: rgba(0,0,0,0.1);
+    --shadow-medium: rgba(0,0,0,0.15);
+    --shadow-heavy: rgba(0,0,0,0.25);
+}
+
+/* General container styling */
+.lab-equipment-container {
+    padding: 3rem 1rem;
+    background: #e9ecef;
+    border-radius: 20px;
+    box-shadow: 0 0 15px var(--shadow-light);
+    max-width: 1200px; /* Limit width for better presentation on large screens */
+    margin: 2rem auto; /* Center the container with some top/bottom margin */
+}
+
+/* Custom class for agri-dark text */
+.text-agri-dark {
+    color: var(--agri-dark) !important;
+}
+
+/* Heading styles */
+.display-4 {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-shadow: 1px 1px 2px var(--shadow-light);
+    margin-bottom: 1rem;
+    color: var(--agri-dark); /* Ensure it uses the variable */
+}
+
+/* Lead text for description */
+.lead {
+    font-size: 1.25rem;
+    color: var(--text-medium);
+    font-weight: 400;
+    max-width: 800px;
+    margin: 0 auto 2rem auto;
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* Card styling */
+.card {
+    background-color: var(--card-bg);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px var(--shadow-medium);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #ddd;
+    display: flex; /* Ensures card content fills height */
+    flex-direction: column;
+}
+
+.card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 10px 20px var(--shadow-heavy);
+}
+
+.card-img-top {
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    filter: brightness(0.95);
+    border-bottom: 1px solid #eee; /* Subtle separator */
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+    filter: brightness(1);
+}
+
+.card-body {
+    padding: 1.5rem;
+    text-align: center;
+    flex-grow: 1; /* Allows body to take remaining space */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Distribute content */
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--agri-dark);
+    margin-bottom: 0.5rem;
+}
+
+.card-text {
+    font-size: 1rem;
+    color: var(--text-medium);
+    line-height: 1.6;
+    min-height: 70px; /* Ensure consistent card height */
+    margin-bottom: 0; /* Remove default paragraph margin */
+}
+
+/* Swiper slideshow styling */
+.swiper {
+    padding: 30px 0;
+    width: 100%;
+}
+
+.swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: stretch; /* Stretch items to fill height */
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.swiper-slide-active {
+    transform: scale(1.03); /* Slightly less aggressive scale for active slide */
+    opacity: 1;
+}
+
+.swiper-slide:not(.swiper-slide-active) {
+    opacity: 0.7;
+}
+
+/* Swiper navigation buttons */
+.swiper-button-next,
+.swiper-button-prev {
+    color: #fff;
+    background-color: var(--agri-dark);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px var(--shadow-heavy);
+    opacity: 0.9;
+    transition: background-color 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
+    z-index: 10;
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+    font-size: 1.5rem; /* Adjust icon size */
+}
+
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+    background-color: var(--agri-medium);
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+/* Positioning for navigation buttons */
+.swiper-button-next {
+    right: 20px; /* Adjusted from 10px for better spacing */
+}
+
+.swiper-button-prev {
+    left: 20px; /* Adjusted from 10px for better spacing */
+}
+
+/* Swiper pagination */
+.swiper-pagination-bullet {
+    background-color: #ccc;
+    opacity: 1;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.swiper-pagination-bullet-active {
+    background-color: var(--agri-dark);
+    transform: scale(1.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+    .display-4 {
+        font-size: 2.5rem;
+    }
+
+    .lead {
+        font-size: 1.15rem;
+    }
+
+    .card-img-top {
+        height: 220px;
+    }
+
+    .swiper-button-next,
+    .swiper-button-prev {
+        width: 40px;
+        height: 40px;
+    }
+
+    .swiper-button-next::after,
+    .swiper-button-prev::after {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .swiper {
+        padding: 15px 0;
+    }
+
+    .card-img-top {
+        height: 180px;
+    }
+
+    .card-title {
+        font-size: 1.3rem;
+    }
+
+    .card-text {
+        font-size: 0.95rem;
+        min-height: 60px; /* Adjust min-height for smaller screens */
+    }
+
+    .swiper-slide-active {
+        transform: scale(1); /* No scaling on smaller screens to avoid cutoff */
+    }
+
+    .swiper-button-next,
+    .swiper-button-prev {
+        display: none; /* Hide navigation buttons on very small screens if preferred */
+    }
+}
+
+@media (max-width: 576px) {
+    .display-4 {
+        font-size: 2rem;
+    }
+
+    .lead {
+        font-size: 1rem;
+    }
+
+    .card-img-top {
+        height: 150px;
+    }
+
+    .lab-equipment-container {
+        padding: 1rem 0.5rem;
+        margin: 1rem auto;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .card-text {
+        min-height: auto; /* Allow text to flow naturally */
+    }
+}

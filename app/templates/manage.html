@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='manage.css') }}">
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    .comment-column, #userComment {
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+    .user-row.active, .pending-user-row.active {
+      background-color: rgba(0, 123, 255, 0.1);
+    }
+    .avatar {
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+<div class="d-flex" id="wrapper">
+  <!-- Sidebar -->
+  <nav id="sidebar" class="bg-dark text-white">
+    <div class="sidebar-header p-3 d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">User Manager</h5>
+    </div>
+    <div class="p-3">
+      <ul class="nav flex-column">
+        <li class="nav-item mb-2">
+          <a class="nav-link text-white active" href="#"><i class="bi bi-people-fill me-2"></i>Users</a>
+        </li>
+        {% if session.get('role') in ['superuser', 'ultra_superuser'] %}
+        <li class="nav-item mb-2">
+          <a class="nav-link text-white" href="#"><i class="bi bi-shield-lock me-2"></i>Roles</a>
+        </li>
+        <li class="nav-item mb-2">
+          <a class="nav-link text-white" href="#"><i class="bi bi-journal-text me-2"></i>Rules</a>
+        </li>
+        {% endif %}
+        {% if session.get('role') == 'ultra_superuser' %}
+        <li class="nav-item mb-2">
+          <a class="nav-link text-white" href="#"><i class="bi bi-clipboard2-data me-2"></i>Audit Logs</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <div id="page-content" class="flex-grow-1">
+    <!-- Top navbar toggle -->
+    <nav class="navbar navbar-light bg-light d-md-none">
+      <div class="container-fluid">
+        <button class="btn btn-outline-dark" id="openSidebar"><i class="bi bi-list"></i></button>
+        <span class="navbar-brand mb-0 h5">User Manager</span>
+      </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+      <div class="row">
+        <!-- Tables Column -->
+        <div class="col-md-8">
+          <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+              <a class="nav-link active" data-bs-toggle="tab" href="#usersTab">Users</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-bs-toggle="tab" href="#pendingTab">Pending Registrations</a>
+            </li>
+          </ul>
+
+          <div class="tab-content">
+            <!-- Users Tab -->
+            <div class="tab-pane fade show active" id="usersTab">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold"><i class="bi bi-list-ul me-2"></i>Users</h4>
+                <div class="d-flex align-items-center">
+                  <input class="form-control me-2" style="width: 200px;" placeholder="Search..." id="searchInput">
+                </div>
+              </div>
+
+              <table class="table table-hover table-bordered shadow-sm" id="userTable">
+                <thead class="table-light">
+                  <tr>
+                    <th>Full Name</th>
+                    <th>Status</th>
+                    <th>Email</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for user in users %}
+                    <tr class="user-row" data-id="{{ user.id }}"
+                        data-username="{{ user.username | e }}"
+                        data-first_name="{{ user.first_name | e }}"
+                        data-last_name="{{ user.last_name | e }}"
+                        data-phone="{{ user.phone_number | e if show_sensitive else '' }}"
+                        data-nationality="{{ user.nationality | e if show_sensitive else '' }}"
+                        data-profession="{{ user.profession | e if show_sensitive else '' }}"
+                        data-session_duration="{{ user.session_duration | e }}">
+                      <td>
+                        <img src="https://i.pravatar.cc/35?img={{ loop.index }}" class="avatar me-2">
+                        {{ user.full_name | e }}
+                      </td>
+                      <td>
+                        <span class="badge {{ 'bg-success' if user.status else 'bg-danger' }}">
+                          {{ 'Active' if user.status else 'Not active' }}
+                        </span>
+                      </td>
+                      <td>{{ user.email | e }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pending Registrations Tab -->
+            <div class="tab-pane fade" id="pendingTab">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold"><i class="bi bi-hourglass-split me-2"></i>Pending Registrations</h4>
+                <div class="d-flex align-items-center">
+                  <input class="form-control me-2" style="width: 200px;" placeholder="Search..." id="pendingSearchInput">
+                </div>
+              </div>
+
+              <table class="table table-hover table-bordered shadow-sm" id="pendingUserTable">
+                <thead class="table-light">
+                  <tr>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Submission Time</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for pending_user in pending_users %}
+                    <tr class="pending-user-row" data-id="{{ pending_user.id }}"
+                        data-username="{{ pending_user.username | e }}"
+                        data-first_name="{{ pending_user.first_name | e }}"
+                        data-last_name="{{ pending_user.last_name | e }}"
+                        data-phone="{{ pending_user.phone_number | e if show_sensitive else '' }}"
+                        data-nationality="{{ pending_user.nationality | e if show_sensitive else '' }}"
+                        data-profession="{{ pending_user.profession | e if show_sensitive else '' }}"
+                        data-province="{{ pending_user.province | e }}"
+                        data-district="{{ pending_user.district | e }}"
+                        data-department="{{ pending_user.department | e }}"
+                        data-role="{{ pending_user.role | e }}">
+                      <td>
+                        <img src="https://i.pravatar.cc/35?img={{ loop.index }}" class="avatar me-2">
+                        {{ pending_user.full_name | e }}
+                      </td>
+                      <td>{{ pending_user.email | e }}</td>
+                      <td>{{ pending_user.submission_time | e }}</td>
+                      <td>
+                        <button class="btn btn-sm btn-outline-success approve-btn" data-id="{{ pending_user.id }}"><i class="bi bi-check"></i></button>
+                        <button class="btn btn-sm btn-outline-danger reject-btn" data-id="{{ pending_user.id }}"><i class="bi bi-x"></i></button>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Information Panel -->
+        <div class="col-md-4 d-none" id="userInfoPanelContainer">
+          <div class="card shadow-sm h-100">
+            <div class="card-body text-center" id="userInfoPanel">
+              <div class="d-flex justify-content-start align-items-center mb-3">
+                <h5 class="card-title me-3">User Information</h5>
+                <span class="badge" id="userStatus">Select a user</span>
+                {% if session.get('role') == 'ultra_superuser' %}
+                  <p class="ms-auto mb-0"><i class="bi bi-pencil-square" id="editUserBtn" style="cursor: pointer;"></i></p>
+                {% endif %}
+              </div>
+              <img src="https://via.placeholder.com/250x180?text=Select+a+User" class="img-fluid rounded mb-3" alt="User Image" id="userImage">
+              <h6 class="fw-bold" id="userFullName">Select a user</h6>
+              <p class="text-muted mb-1" id="userUsername"><i class="bi bi-person me-1"></i>No username</p>
+              <p class="text-muted mb-1" id="userEmail"><i class="bi bi-envelope me-1"></i>No email</p>
+              <p class="text-muted mb-1" id="userPhone"><i class="bi bi-telephone me-1"></i>No phone number</p>
+              <p class="text-muted mb-1" id="userNationality"><i class="bi bi-globe me-1"></i>No nationality</p>
+              <p class="text-muted mb-1" id="userProfession"><i class="bi bi-briefcase me-1"></i>No profession</p>
+              <p class="text-muted mb-1" id="userProvince"><i class="bi bi-geo-alt me-1"></i>No province</p>
+              <p class="text-muted mb-1" id="userDistrict"><i class="bi bi-geo me-1"></i>No district</p>
+              <p class="text-muted mb-1" id="userDepartment"><i class="bi bi-building me-1"></i>No department</p>
+              <p class="text-muted mb-1" id="userSessionDuration"><i class="bi bi-hourglass-split me-1"></i>Total session time: 0 minutes</p>
+              <p class="text-muted mb-3" id="userLastVisited"><i class="bi bi-clock me-1"></i>Last visited: Never</p>
+              <h6><i class="bi bi-person-gear me-2"></i>Roles</h6>
+              <div id="userRoles">No roles</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editUserForm">
+          <input type="hidden" id="editUserId">
+          <div class="mb-3">
+            <label for="editFirstName" class="form-label">First Name</label>
+            <input type="text" class="form-control" id="editFirstName" required>
+          </div>
+          <div class="mb-3">
+            <label for="editLastName" class="form-label">Last Name</label>
+            <input type="text" class="form-control" id="editLastName" required>
+          </div>
+          <div class="mb-3">
+            <label for="editPhone" class="form-label">Phone Number</label>
+            <input type="text" class="form-control" id="editPhone">
+          </div>
+          <div class="mb-3">
+            <label for="editNationality" class="form-label">Nationality</label>
+            <input type="text" class="form-control" id="editNationality">
+          </div>
+          <div class="mb-3">
+            <label for="editProfession" class="form-label">Profession</label>
+            <input type="text" class="form-control" id="editProfession">
+          </div>
+          <div class="mb-3">
+            <label for="editStatus" class="form-label">Status</label>
+            <select class="form-select" id="editStatus">
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="editRole" class="form-label">Role</label>
+            <select class="form-select" id="editRole">
+              <option value="normal">Normal User</option>
+              <option value="superuser">Superuser</option>
+              <option value="ultra_superuser">Ultra Superuser</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="saveUserChanges">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+$(document).ready(function() {
+  // Sidebar toggle
+  const sidebar = document.getElementById('sidebar');
+  const openBtn = document.getElementById('openSidebar');
+  const closeBtn = document.getElementById('closeSidebar');
+
+  openBtn?.addEventListener('click', () => sidebar.classList.add('show'));
+  closeBtn?.addEventListener('click', () => sidebar.classList.remove('show'));
+
+  // User row click handler
+  $('.user-row').click(function() {
+    const userId = $(this).data('id');
+    $('#userInfoPanelContainer').removeClass('d-none'); // Show the panel
+    $.ajax({
+      url: `/user/${userId}`,
+      method: 'GET',
+      success: function(data) {
+        $('#userFullName').text(data.full_name || 'Unknown');
+        $('#userUsername').html(`<i class="bi bi-person me-1"></i>${data.username || 'No username'}`);
+        $('#userEmail').html(`<i class="bi bi-envelope me-1"></i>${data.email || 'No email'}`);
+        $('#userPhone').html(`<i class="bi bi-telephone me-1"></i>${data.phone_number || 'No phone number'}`);
+        $('#userNationality').html(`<i class="bi bi-globe me-1"></i>${data.nationality || 'No nationality'}`);
+        $('#userProfession').html(`<i class="bi bi-briefcase me-1"></i>${data.profession || 'No profession'}`);
+        $('#userProvince').html(`<i class="bi bi-geo-alt me-1"></i>${data.province || 'No province'}`);
+        $('#userDistrict').html(`<i class="bi bi-geo me-1"></i>${data.district || 'No district'}`);
+        $('#userDepartment').html(`<i class="bi bi-building me-1"></i>${data.department || 'No department'}`);
+        $('#userSessionDuration').html(`<i class="bi bi-hourglass-split me-1"></i>Total session time: ${data.session_duration || '0 minutes'}`);
+        $('#userStatus').text(data.status).removeClass('bg-success bg-danger')
+          .addClass(data.status === 'Active' ? 'bg-success' : 'bg-danger');
+        $('#userLastVisited').html(`<i class="bi bi-clock me-1"></i>Last visited: ${data.last_visited || 'Never'}`);
+        $('#userImage').attr('src', `https://i.pravatar.cc/250?img=${userId.slice(-2)}`);
+        const rolesHtml = data.roles.length ? data.roles.map(role => `<span class="badge bg-secondary me-1">${role}</span>`).join('') : 'No roles';
+        $('#userRoles').html(rolesHtml);
+        
+        // Store the current selected user ID
+        $('.user-row, .pending-user-row').removeClass('active');
+        $(this).addClass('active');
+      },
+      error: function(xhr) {
+        alert('Error fetching user: ' + xhr.responseJSON.error);
+        $('#userInfoPanelContainer').addClass('d-none'); // Hide on error
+      }
+    });
+  });
+
+  // Pending user row click handler
+  $('.pending-user-row').click(function() {
+    const userId = $(this).data('id');
+    $('#userInfoPanelContainer').removeClass('d-none'); // Show the panel
+    $.ajax({
+      url: `/pending_user/${userId}`,
+      method: 'GET',
+      success: function(data) {
+        $('#userFullName').text(data.full_name || 'Unknown');
+        $('#userUsername').html(`<i class="bi bi-person me-1"></i>${data.username || 'No username'}`);
+        $('#userEmail').html(`<i class="bi bi-envelope me-1"></i>${data.email || 'No email'}`);
+        $('#userPhone').html(`<i class="bi bi-telephone me-1"></i>${data.phone_number || 'No phone number'}`);
+        $('#userNationality').html(`<i class="bi bi-globe me-1"></i>${data.nationality || 'No nationality'}`);
+        $('#userProfession').html(`<i class="bi bi-briefcase me-1"></i>${data.profession || 'No profession'}`);
+        $('#userProvince').html(`<i class="bi bi-geo-alt me-1"></i>${data.province || 'No province'}`);
+        $('#userDistrict').html(`<i class="bi bi-geo me-1"></i>${data.district || 'No district'}`);
+        $('#userDepartment').html(`<i class="bi bi-building me-1"></i>${data.department || 'No department'}`);
+        $('#userSessionDuration').html(`<i class="bi bi-hourglass-split me-1"></i>Total session time: 0 minutes`);
+        $('#userStatus').text(data.status).removeClass('bg-success bg-danger')
+          .addClass(data.status === 'pending' ? 'bg-warning' : 'bg-danger');
+        $('#userLastVisited').html(`<i class="bi bi-clock me-1"></i>Submission time: ${data.submission_time || 'Never'}`);
+        $('#userImage').attr('src', `https://i.pravatar.cc/250?img=${userId.slice(-2)}`);
+        const rolesHtml = `<span class="badge bg-secondary me-1">${data.role}</span>`;
+        $('#userRoles').html(rolesHtml);
+        
+        // Store the current selected user ID
+        $('.user-row, .pending-user-row').removeClass('active');
+        $(this).addClass('active');
+      },
+      error: function(xhr) {
+        alert('Error fetching pending user: ' + xhr.responseJSON.error);
+        $('#userInfoPanelContainer').addClass('d-none'); // Hide on error
+      }
+    });
+  });
+
+  // Hide panel when no user is selected initially
+  $('#userInfoPanelContainer').addClass('d-none');
+
+  // Search filter for users
+  $('#searchInput').on('input', function() {
+    const searchTerm = $(this).val().toLowerCase();
+    $('#userTable tbody tr').each(function() {
+      const fullName = $(this).find('td').eq(0).text().toLowerCase();
+      const email = $(this).find('td').eq(2).text().toLowerCase();
+      const username = $(this).data('username').toLowerCase();
+      const phone = $(this).data('phone')?.toLowerCase() || '';
+      const nationality = $(this).data('nationality')?.toLowerCase() || '';
+      const profession = $(this).data('profession')?.toLowerCase() || '';
+      const sessionDuration = $(this).data('session_duration')?.toLowerCase() || '';
+      $(this).toggle(
+        fullName.includes(searchTerm) ||
+        email.includes(searchTerm) ||
+        username.includes(searchTerm) ||
+        phone.includes(searchTerm) ||
+        nationality.includes(searchTerm) ||
+        profession.includes(searchTerm) ||
+        sessionDuration.includes(searchTerm)
+      );
+    });
+  });
+
+  // Search filter for pending users
+  $('#pendingSearchInput').on('input', function() {
+    const searchTerm = $(this).val().toLowerCase();
+    $('#pendingUserTable tbody tr').each(function() {
+      const fullName = $(this).find('td').eq(0).text().toLowerCase();
+      const email = $(this).find('td').eq(1).text().toLowerCase();
+      const username = $(this).data('username').toLowerCase();
+      const phone = $(this).data('phone')?.toLowerCase() || '';
+      const nationality = $(this).data('nationality')?.toLowerCase() || '';
+      const profession = $(this).data('profession')?.toLowerCase() || '';
+      const province = $(this).data('province')?.toLowerCase() || '';
+      const district = $(this).data('district')?.toLowerCase() || '';
+      const department = $(this).data('department')?.toLowerCase() || '';
+      $(this).toggle(
+        fullName.includes(searchTerm) ||
+        email.includes(searchTerm) ||
+        username.includes(searchTerm) ||
+        phone.includes(searchTerm) ||
+        nationality.includes(searchTerm) ||
+        profession.includes(searchTerm) ||
+        province.includes(searchTerm) ||
+        district.includes(searchTerm) ||
+        department.includes(searchTerm)
+      );
+    });
+  });
+
+  // Edit button click handler
+  $(document).on('click', '#editUserBtn', function() {
+    const userId = $('.user-row.active').data('id');
+    if (!userId) {
+      alert('Please select a user first');
+      return;
+    }
+    
+    // Get user data from the row
+    const userRow = $(`.user-row[data-id="${userId}"]`);
+    $('#editFirstName').val(userRow.data('first_name'));
+    $('#editLastName').val(userRow.data('last_name'));
+    $('#editPhone').val(userRow.data('phone'));
+    $('#editNationality').val(userRow.data('nationality'));
+    $('#editProfession').val(userRow.data('profession'));
+    
+    // Get current status
+    const isActive = userRow.find('td').eq(1).find('.badge').hasClass('bg-success');
+    $('#editStatus').val(isActive ? 'true' : 'false');
+    
+    // Show the modal
+    const editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+    editModal.show();
+  });
+
+  // Save changes handler
+  $('#saveUserChanges').click(function() {
+    const userId = $('.user-row.active').data('id');
+    if (!userId) return;
+    
+    const updatedData = {
+      first_name: $('#editFirstName').val(),
+      last_name: $('#editLastName').val(),
+      phone_number: $('#editPhone').val(),
+      nationality: $('#editNationality').val(),
+      profession: $('#editProfession').val(),
+      status: $('#editStatus').val() === 'true',
+      role: $('#editRole').val()
+    };
+    
+    $.ajax({
+      url: `/user/${userId}`,
+      method: 'PUT',
+      contentType: 'application/json',
+      data: JSON.stringify(updatedData),
+      success: function(response) {
+        // Update the UI with the new data
+        const userRow = $(`.user-row[data-id="${userId}"]`);
+        userRow.data('first_name', updatedData.first_name);
+        userRow.data('last_name', updatedData.last_name);
+        userRow.data('phone', updatedData.phone_number);
+        userRow.data('nationality', updatedData.nationality);
+        userRow.data('profession', updatedData.profession);
+        
+        // Update the full name in the table
+        userRow.find('td').eq(0).html(
+          `<img src="https://i.pravatar.cc/35?img=${userId.slice(-2)}" class="avatar me-2">
+          ${updatedData.first_name} ${updatedData.last_name}`
+        );
+        
+        // Update the status badge
+        if (updatedData.status) {
+          userRow.find('td').eq(1).html('<span class="badge bg-success">Active</span>');
+        } else {
+          userRow.find('td').eq(1).html('<span class="badge bg-danger">Not active</span>');
+        }
+        
+        // Close the modal and show success message
+        $('#editUserModal').modal('hide');
+        alert('User updated successfully');
+        
+        // Refresh the user info panel
+        userRow.click();
+      },
+      error: function(xhr) {
+        alert('Error updating user: ' + xhr.responseJSON.error);
+      }
+    });
+  });
+
+  // Approve button handler
+  $('.approve-btn').click(function() {
+    const userId = $(this).data('id');
+    if (confirm('Are you sure you want to approve this user?')) {
+      $.ajax({
+        url: `/pending_user/${userId}/approve`,
+        method: 'POST',
+        success: function(response) {
+          alert('User approved successfully');
+          $(`.pending-user-row[data-id="${userId}"]`).remove();
+          // Refresh the page to update the users list
+          location.reload();
+        },
+        error: function(xhr) {
+          alert('Error approving user: ' + xhr.responseJSON.error);
+        }
+      });
+    }
+  });
+
+  // Reject button handler
+  $('.reject-btn').click(function() {
+    const userId = $(this).data('id');
+    if (confirm('Are you sure you want to reject this user?')) {
+      $.ajax({
+        url: `/pending_user/${userId}/reject`,
+        method: 'POST',
+        success: function(response) {
+          alert('User registration rejected');
+          $(`.pending-user-row[data-id="${userId}"]`).remove();
+        },
+        error: function(xhr) {
+          alert('Error rejecting user: ' + xhr.responseJSON.error);
+        }
+      });
+    }
+  });
+});
+</script>
+</body>
+</html>

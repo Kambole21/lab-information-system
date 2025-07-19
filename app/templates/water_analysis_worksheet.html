@@ -1,0 +1,272 @@
+{% extends 'layouts.html' %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='water_worksheet.css') }}">
+
+<main class="main-content p-4">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form id="waterAnalysisForm" action="{{ url_for('water_worksheet.water_worksheet') }}" method="POST" class="card p-4">
+        {% if worksheet and worksheet.get('_id') %}
+            <input type="hidden" name="id" value="{{ worksheet.get('_id') }}">
+        {% endif %}
+        <div class="intro">
+            <header class="mb-4">
+                <p><strong>National Agriculture Research Laboratories</strong></p>
+                <p><strong>Laboratory Analytical Services</strong></p>
+                <h5 class="fw-bold"><strong><u>Water Analysis Worksheet</u></strong></h5>
+            </header>
+        </div>
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>Parameter</th>
+                        {% for i in range(1, 11) %}
+                        <th>Sample {{ i }}</
+
+th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Lab#:</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="text" class="form-control form-control-sm" name="labno{{ i }}" value="{{ sample.get('lab_no', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>pH</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.1" min="0" max="14" class="form-control form-control-sm" name="ph_sample{{ i }}" value="{{ sample.get('ph', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>EC (µS/cm)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ec_sample{{ i }}" value="{{ sample.get('ec', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>TDS (ppm)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.1" min="0" class="form-control form-control-sm" name="tds_sample{{ i }}" value="{{ sample.get('tds', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Resistivity</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.1" min="0" class="form-control form-control-sm" name="resistivity_sample{{ i }}" value="{{ sample.get('resistivity', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Salinity (%)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="salinity_sample{{ i }}" value="{{ sample.get('salinity', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>CO₃²⁻ (mg/l)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="co3_sample{{ i }}" value="{{ sample.get('co3', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>HCO₃⁻ (mg/l)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="hco3_sample{{ i }}" value="{{ sample.get('hco3', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Cl⁻ (mg/l)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="cl_sample{{ i }}" value="{{ sample.get('cl', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>SO₄²⁻ (mg/l)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="so4_sample{{ i }}" value="{{ sample.get('so4', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>K⁺ (mg/l)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="k_sample{{ i }}" value="{{ sample.get('k', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Ca²⁺ (mg/l)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ca_sample{{ i }}" value="{{ sample.get('ca', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Mg²⁺ (mg/l)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="mg_sample{{ i }}" value="{{ sample.get('mg', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Na⁺ (mg/l)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="na_sample{{ i }}" value="{{ sample.get('na', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Cu²⁺ (mg/l)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="cu_sample{{ i }}" value="{{ sample.get('cu', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Mn²⁺ (mg/l)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="mn_sample{{ i }}" value="{{ sample.get('mn', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Fe²⁺ (mg/l)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="fe_sample{{ i }}" value="{{ sample.get('fe', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td>Zn²⁺ (mg/l)</td>
+                        {% for i in range(1, 11) %}
+                        {% set sample = worksheet.get('samples', [])[i-1] if i <= worksheet.get('samples', [])|length else {} %}
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="zn_sample{{ i }}" value="{{ sample.get('zn', '') }}"></td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label for="date_checked" class="form-label text-muted"><b>Date:</b></label>
+                <input type="date" class="form-control" id="date_checked" name="date_checked" value="{{ worksheet.get('date_checked', '') }}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="analyzed_by" class="form-label text-muted"><b>Analyzed By:</b></label>
+                <input type="text" class="form-control" id="analyzed_by" name="analyzed_by" value="{{ worksheet.get('analyzed_by', '') }}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="checked_by" class="form-label text-muted"><b>Checked By:</b></label>
+                <input type="text" class="form-control" id="checked_by" name="checked_by" value="{{ worksheet.get('checked_by', '') }}" required>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">Submit Worksheet</button>
+        </div>
+    </form>
+</main>
+
+<script>
+document.getElementById('waterAnalysisForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Client-side validation
+    const requiredFields = [
+        { id: 'date_checked', label: 'Date' },
+        { id: 'analyzed_by', label: 'Analyzed By' },
+        { id: 'checked_by', label: 'Checked By' }
+    ];
+
+    let isValid = true;
+
+    // Validate required fields
+    requiredFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (!input.value.trim()) {
+            alert(`Please fill in the ${field.label} field.`);
+            input.focus();
+            isValid = false;
+            return;
+        }
+    });
+
+    // Validate pH values (0-14)
+    for (let i = 1; i <= 10; i++) {
+        const pHInput = document.querySelector(`input[name="ph_sample${i}"]`);
+        if (pHInput.value && (pHInput.value < 0 || pHInput.value > 14)) {
+            alert(`pH for Sample ${i} must be between 0 and 14.`);
+            pHInput.focus();
+            isValid = false;
+            return;
+        }
+    }
+
+    // Validate numeric fields (non-negative)
+    const numericFields = [
+        'ec_sample', 'tds_sample', 'resistivity_sample', 'salinity_sample',
+        'co3_sample', 'hco3_sample', 'cl_sample', 'so4_sample',
+        'k_sample', 'ca_sample', 'mg_sample', 'na_sample',
+        'cu_sample', 'mn_sample', 'fe_sample', 'zn_sample'
+    ];
+    for (let i = 1; i <= 10; i++) {
+        numericFields.forEach(field => {
+            const input = document.querySelector(`input[name="${field}${i}"]`);
+            if (input && input.value && input.value < 0) {
+                alert(`${field.replace(/_sample/, '').toUpperCase()} for Sample ${i} must be non-negative.`);
+                input.focus();
+                isValid = false;
+                return;
+            }
+        });
+        if (!isValid) return;
+    }
+
+    // Ensure at least one sample has data
+    let hasSampleData = false;
+    for (let i = 1; i <= 10; i++) {
+        const fields = ['labno', ...numericFields];
+        for (const field of fields) {
+            const input = document.querySelector(`input[name="${field}${i}"]`);
+            if (input && input.value.trim()) {
+                hasSampleData = true;
+                break;
+            }
+        }
+        if (hasSampleData) break;
+    }
+    if (!hasSampleData) {
+        alert('Please provide data for at least one sample.');
+        isValid = false;
+}
+
+if (isValid) {
+this.submit();
+}
+});
+</script>
+{% endblock %}

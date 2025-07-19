@@ -1,0 +1,199 @@
+{% extends 'layouts.html' %}
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
+
+<main class="main-content p-4">
+    <header class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4">
+        <h1 class="fw-bold mb-3 mb-lg-0">Lab Information System</h1>
+        {% if user %}
+            <div class="user-info-card">
+                    <div class="user-details">
+                        <p class="user-fname">{{ user.first_name }}</p>
+                        <p class="user-lname">{{ user.last_name }}</p>
+                        <p class="user-role">{{ user.role | capitalize }}</p>
+                    </div>
+                    <div class="user-profession">
+                        <p class="user-profession-text">{{ user.profession }}</p>
+                    </div>
+            </div>
+        {% endif %}
+    </header>
+
+    <section class="quick-actions mb-4">
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <a href="#" class="card action-card text-center text-decoration-none" data-bs-toggle="modal" data-bs-target="#worksheetModal" id="newWorksheetCard">
+                    <div class="card-body">
+                        <i class="bi bi-plus-circle fs-3 mb-2"></i>
+                        <h5 class="card-title">New Worksheet</h5>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="#" class="card action-card text-center text-decoration-none">
+                    <div class="card-body">
+                        <i class="bi bi-upload fs-3 mb-2"></i>
+                        <h5 class="card-title">Upload Worksheet</h5>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="{{ url_for('submit.submit') }}" class="card action-card text-center text-decoration-none">
+                    <div class="card-body">
+                        <i class="bi bi-journal-bookmark-fill fs-3 mb-2"></i>
+                        <h5 class="card-title">Submitted Worksheet</h5>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="{{url_for('my_files.files')}}" class="card action-card text-center text-decoration-none">
+                    <div class="card-body">
+                        <i class="bi bi-folder fs-3 mb-2"></i>
+                        <h5 class="card-title">My Files</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="available-worksheets mb-4">
+        <h2 class="fw-bold mb-3">Available Worksheets</h2>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="card worksheet-info-card h-100" id="waterAnalysisCard">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-droplet me-2"></i>Water Analysis Report Form</h5>
+                        <p class="card-text">Detailed report form for recording and analyzing various parameters of water samples, ensuring quality control and safety standards.</p>
+                        <a href="{{ url_for('water_analysis.water_analysis') }}" class="btn btn-sm btn-outline-agri-green">Start New <i class="bi bi-plus-circle ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card worksheet-info-card h-100" id="equipmentCard">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-gear me-2"></i>Equipment Operation and Log Book</h5>
+                        <p class="card-text">Track and log the operation, maintenance, and calibration of laboratory equipment for optimal performance and compliance.</p>
+                        <a href="{{ url_for('equipment.equipment') }}" class="btn btn-sm btn-outline-agri-green">Start New <i class="bi bi-plus-circle ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card worksheet-info-card h-100" id="soilAnalysisCard">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-tree me-2"></i>Soil Analysis Report Form</h5>
+                        <p class="card-text">Comprehensive form for documenting soil composition, nutrient levels, and other properties crucial for agricultural and environmental studies.</p>
+                        <a href="{{ url_for('soil.soil') }}" class="btn btn-sm btn-outline-agri-green">Start New <i class="bi bi-plus-circle ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card worksheet-info-card h-100" id="traceElementsCard">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-flower1 me-2"></i>Trace Worksheets</h5>
+                        <p class="card-text">Forms designed for recording trace element analysis, vital for understanding micro-nutrient levels in various samples.</p>
+                        <a href="{{ url_for('trace.trace') }}" class="btn btn-sm btn-outline-agri-green">Start New <i class="bi bi-plus-circle ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card worksheet-info-card h-100" id="waterWorksheetCard">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-water me-2"></i>Water Analysis Work Sheet Form</h5>
+                        <p class="card-text">A practical worksheet for direct entry of raw data during water analysis, facilitating quick and accurate record-keeping.</p>
+                        <a href="{{ url_for('water_worksheet.water_worksheet') }}" class="btn btn-sm btn-outline-agri-green">Start New <i class="bi bi-plus-circle ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card worksheet-info-card h-100" id="organicCarbonNitrogenCard">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-thermometer me-2"></i>Organic, Carbon & Nitrogen Analysis</h5>
+                        <p class="card-text">Worksheet for recording data related to organic matter, carbon, and nitrogen content, essential for soil fertility and environmental assessments.</p>
+                        <a href="{{ url_for('organic_carbon_nitrogen.organic_carbon_nitrogen') }}" class="btn btn-sm btn-outline-agri-green">Start New <i class="bi bi-plus-circle ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card worksheet-info-card h-100" id="ph_basesCard">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-graph-up-arrow me-2"></i>Ph, P, Bases, & Trace Analysis Form</h5>
+                        <p class="card-text">A combined form for reporting pH levels, phosphorus, base saturation, and trace element analysis in a single, comprehensive document.</p>
+                        <a href="{{ url_for('ph_bases.ph_bases') }}" class="btn btn-sm btn-outline-agri-green">Start New <i class="bi bi-plus-circle ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal fade" id="worksheetModal" tabindex="-1" aria-labelledby="worksheetModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="worksheetModalLabel">Select Worksheet Type</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <a href="{{ url_for('water_analysis.water_analysis') }}" class="text-decoration-none text-agri-green">
+                                <i class="bi bi-droplet me-2"></i>Water Analysis Report Form
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('equipment.equipment') }}" class="text-decoration-none text-agri-green">
+                                <i class="bi bi-gear me-2"></i>Equipment Operation and Log Book
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('soil.soil') }}" class="text-decoration-none text-agri-green">
+                                <i class="bi bi-tree me-2"></i>Soil Analysis Report Form
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('trace.trace') }}" class="text-decoration-none text-agri-green">
+                                <i class="bi bi-flower1 me-2"></i>Trace Worksheets
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('water_worksheet.water_worksheet') }}" class="text-decoration-none text-agri-green">
+                                <i class="bi bi-water me-2"></i>Water Analysis Work Sheet Form
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('organic_carbon_nitrogen.organic_carbon_nitrogen') }}" class="text-decoration-none text-agri-green">
+                                <i class="bi bi-thermometer me-2"></i>Organic, Carbon & Nitrogen
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ url_for('ph_bases.ph_bases') }}" class="text-decoration-none text-agri-green">
+                                <i class="bi bi-graph-up-arrow me-2"></i>Ph, P, Bases, & Trace Analysis Form
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+</main>
+
+<script>
+$(document).ready(function() {
+    // Ensure click works on all devices for the New Worksheet card
+    $('#newWorksheetCard').click(function(e) {
+        e.preventDefault();
+        $('#worksheetModal').modal('show');
+    });
+
+    // Remove hover effect on modal close (if it was ever applied due to other JS)
+    $('#worksheetModal').on('hidden.bs.modal', function () {
+        $('#newWorksheetCard .card-body').removeClass('card-hover');
+    });
+});
+</script>
+{% endblock %}

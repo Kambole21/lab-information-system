@@ -1,0 +1,258 @@
+
+{% extends 'layouts.html' %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='ph_bases.css') }}">
+
+<main class="main-content p-4">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form id="phBasesTracesForm" action="{{ url_for('ph_bases.ph_bases') }}" method="POST" class="card p-4">
+        {% if worksheet and worksheet.get('_id') %}
+            <input type="hidden" name="id" value="{{ worksheet.get('_id') }}">
+        {% endif %}
+        <div class="intro">
+            <header class="mb-4">
+                <p><strong>National Agriculture Research Laboratories</strong></p>
+                <p><strong>Laboratory Analytical Services</strong></p>
+                <h5 class="fw-bold"><u>pH, Phosphorus, Bases & Traces Analysis Worksheet</u></h5>
+            </header>
+        </div>
+        <!-- Metadata -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label for="lab_number" class="form-label"><strong>Lab #:</strong></label>
+                <input type="text" class="form-control" id="lab_number" name="lab_number" value="{{ worksheet.get('lab_number', '') }}" placeholder="e.g., PHB123" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="date_of_analysis" class="form-label"><strong>Date of Analysis:</strong></label>
+                <input type="date" class="form-control" id="date_of_analysis" name="date_of_analysis" value="{{ worksheet.get('date_of_analysis', '') }}" required>
+            </div>
+        </div>
+
+        <!-- Calibration Table -->
+        <div class="table-responsive mb-4 calibration">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th rowspan="2">S/N</th>
+                        <th colspan="2">Phosphorus</th>
+                        <th colspan="2">Potassium</th>
+                        <th colspan="2">Calcium</th>
+                        <th colspan="2">Magnesium</th>
+                        <th colspan="2">Sodium</th>
+                    </tr>
+                    <tr>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                        <th>Std Conc</th>
+                        <th>Abs Reading</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(1, 6) %}
+                    {% set row = worksheet.get('calibration_table', [])[i-1] if i <= worksheet.get('calibration_table', [])|length else {} %}
+                    <tr>
+                        <td>{{ i }}</td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="p_std_conc{{ i }}" value="{{ row.get('p_std_conc', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="p_abs_reading{{ i }}" value="{{ row.get('p_abs_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="k_std_conc{{ i }}" value="{{ row.get('k_std_conc', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="k_abs_reading{{ i }}" value="{{ row.get('k_abs_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ca_std_conc{{ i }}" value="{{ row.get('ca_std_conc', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ca_abs_reading{{ i }}" value="{{ row.get('ca_abs_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="mg_std_conc{{ i }}" value="{{ row.get('mg_std_conc', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="mg_abs_reading{{ i }}" value="{{ row.get('mg_abs_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="na_std_conc{{ i }}" value="{{ row.get('na_std_conc', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="na_abs_reading{{ i }}" value="{{ row.get('na_abs_reading', '') }}"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Analysis Table -->
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th rowspan="2">S/N</th>
+                        <th rowspan="2">Lab No.</th>
+                        <th rowspan="2">pH (CaCl₂)</th>
+                        <th colspan="3">Phosphorus (P)</th>
+                        <th colspan="3">Potassium (K)</th>
+                        <th colspan="3">Calcium (Ca)</th>
+                        <th colspan="3">Magnesium (Mg)</th>
+                        <th colspan="3">Sodium (Na)</th>
+                    </tr>
+                    <tr>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                        <th>Instrum. Reading</th>
+                        <th>D.F</th>
+                        <th>mg/l</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(1, 31) %}
+                    {% set row = worksheet.get('analysis_table', [])[i-1] if i <= worksheet.get('analysis_table', [])|length else {} %}
+                    <tr>
+                        <td>{{ i }}</td>
+                        <td><input type="text" class="form-control form-control-sm" name="lab_no{{ i }}" value="{{ row.get('lab_no', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" max="14" class="form-control form-control-sm" name="ph_cacl2{{ i }}" value="{{ row.get('ph_cacl2', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="p_instrument_reading{{ i }}" value="{{ row.get('p_instrument_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="p_df{{ i }}" value="{{ row.get('p_df', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="p_mgl{{ i }}" value="{{ row.get('p_mgl', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="k_instrument_reading{{ i }}" value="{{ row.get('k_instrument_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="k_df{{ i }}" value="{{ row.get('k_df', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="k_mgl{{ i }}" value="{{ row.get('k_mgl', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ca_instrument_reading{{ i }}" value="{{ row.get('ca_instrument_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ca_df{{ i }}" value="{{ row.get('ca_df', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="ca_mgl{{ i }}" value="{{ row.get('ca_mgl', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="mg_instrument_reading{{ i }}" value="{{ row.get('mg_instrument_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="mg_df{{ i }}" value="{{ row.get('mg_df', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="mg_mgl{{ i }}" value="{{ row.get('mg_mgl', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="na_instrument_reading{{ i }}" value="{{ row.get('na_instrument_reading', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="na_df{{ i }}" value="{{ row.get('na_df', '') }}"></td>
+                        <td><input type="number" step="0.01" min="0" class="form-control form-control-sm" name="na_mgl{{ i }}" value="{{ row.get('na_mgl', '') }}"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Signatures -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <label for="analyzed_by" class="form-label"><strong>Analyzed By:</strong></label>
+                <input type="text" class="form-control" id="analyzed_by" name="analyzed_by" value="{{ worksheet.get('analyzed_by', {}).get('name', '') }}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="date_checked" class="form-label"><strong>Date Checked:</strong></label>
+                <input type="date" class="form-control" id="date_checked" name="date_checked" value="{{ worksheet.get('checked_by', {}).get('date', '') }}" >
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="checked_by" class="form-label"><strong>Checked By:</strong></label>
+                <input type="text" class="form-control" id="checked_by" name="checked_by" value="{{ worksheet.get('checked_by', {}).get('name', '') }}" >
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">Submit Worksheet</button>
+        </div>
+    </form>
+</main>
+
+<script>
+document.getElementById('phBasesTracesForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Client-side validation
+    const requiredFields = [
+        { id: 'lab_number', label: 'Lab #' },
+        { id: 'date_of_analysis', label: 'Date of Analysis' },
+        { id: 'analyzed_by', label: 'Analyzed By' },
+        { id: 'checked_by', label: 'Checked By' },
+        { id: 'date_checked', label: 'Date Checked' }
+    ];
+
+    let isValid = true;
+
+    // Validate required fields
+    requiredFields.forEach(field => {
+        const input = document.getElementById(field.id);
+        if (!input.value.trim()) {
+            alert(`Please fill in the ${field.label} field.`);
+            input.focus();
+            isValid = false;
+            return;
+        }
+    });
+
+    // Validate pH values (0-14)
+    for (let i = 1; i <= 30; i++) {
+        const pHInput = document.querySelector(`input[name="ph_cacl2${i}"]`);
+        if (pHInput.value && (pHInput.value < 0 || pHInput.value > 14)) {
+            alert(`pH (CaCl₂) for row ${i} must be between 0 and 14.`);
+            pHInput.focus();
+            isValid = false;
+            return;
+        }
+    }
+
+    // Validate numeric fields (non-negative)
+    const numericFields = [
+        'p_std_conc', 'p_abs_reading', 'k_std_conc', 'k_abs_reading', 'ca_std_conc', 'ca_abs_reading',
+        'mg_std_conc', 'mg_abs_reading', 'na_std_conc', 'na_abs_reading',
+        'p_instrument_reading', 'p_df', 'p_mgl', 'k_instrument_reading', 'k_df', 'k_mgl',
+        'ca_instrument_reading', 'ca_df', 'ca_mgl', 'mg_instrument_reading', 'mg_df', 'mg_mgl',
+        'na_instrument_reading', 'na_df', 'na_mgl'
+    ];
+    for (let i = 1; i <= (numericFields.includes('p_std_conc') ? 5 : 30); i++) {
+        numericFields.forEach(field => {
+            if (field.includes('std_conc') || field.includes('abs_reading')) {
+                if (i > 5) return;
+            }
+            const input = document.querySelector(`input[name="${field}${i}"]`);
+            if (input && input.value && input.value < 0) {
+                alert(`${field.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} for row ${i} must be non-negative.`);
+                input.focus();
+                isValid = false;
+                return;
+            }
+        });
+        if (!isValid) return;
+    }
+
+    // Ensure at least one row in the analysis table has data
+    let hasAnalysisData = false;
+    for (let i = 1; i <= 30; i++) {
+        const fields = ['lab_no', 'ph_cacl2', 'p_instrument_reading', 'p_df', 'p_mgl', 'k_instrument_reading', 'k_df', 'k_mgl',
+                        'ca_instrument_reading', 'ca_df', 'ca_mgl', 'mg_instrument_reading', 'mg_df', 'mg_mgl',
+                        'na_instrument_reading', 'na_df', 'na_mgl'];
+        for (const field of fields) {
+            const input = document.querySelector(`input[name="${field}${i}"]`);
+            if (input && input.value.trim()) {
+                hasAnalysisData = true;
+                break;
+            }
+        }
+        if (hasAnalysisData) break;
+    }
+    if (!hasAnalysisData) {
+        alert('Please provide data for at least one row in the analysis table.');
+        isValid = false;
+    }
+
+    if (isValid) {
+        this.submit();
+    }
+});
+</script>
+{% endblock %}

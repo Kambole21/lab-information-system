@@ -1,0 +1,98 @@
+.card {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table {
+    font-size: 0.875rem;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+/* Remove borders for inputs inside table */
+.table input.form-control {
+    border: none;
+    border-radius: 0;
+    padding: 0.25rem;
+    font-size: 0.875rem;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #333;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem;
+    }
+    .table {
+        font-size: 0.75rem;
+    }
+    .table input.form-control {
+        padding: 0.2rem;
+        font-size: 0.75rem;
+    }
+    .row.mb-4 .col-md-6 {
+        margin-bottom: 1rem;
+    }
+    .tables-container {
+        flex-direction: column !important;
+    }
+}
+
+@media (max-width: 500px) {
+    .table th, .table td {
+        padding: 0.5rem;
+    }
+    .form-label {
+        font-size: 0.875rem;
+    }
+}
+
+/* Center the heading */
+.intro {
+    text-align: center;
+    margin: 0 auto;
+}
+
+/* Underline style for inputs outside the table */
+input.form-control:not(.table input) {
+    border: none;
+    border-bottom: 1px solid #ced4da;
+    border-radius: 0;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+/* Green focus effect for better UX */
+input.form-control:focus {
+    border-bottom: 2px solid #4caf50;
+    outline: none;
+    box-shadow: none;
+}
+
+/* Style for the tables container */
+.tables-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 2rem;
+}
+
+.tables-container .table-responsive {
+    flex: 1;
+    width: 50%;
+}
+
+/* Ensure tables stack on smaller screens */
+@media (max-width: 768px) {
+    .tables-container .table-responsive {
+        width: 100%;
+    }
+}
