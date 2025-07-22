@@ -128,7 +128,7 @@
                                         <a href="{{ url_for('submit.edit_worksheet', id=worksheet.id, collection=worksheet.title) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
                                     {% elif worksheet.title == 'pH, Phosphorus, Bases & Traces Worksheet' %}
                                         <a href="{{ url_for('submit.view_ph', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
-                                        <a href="{{ url_for('submit.edit_worksheet', id=worksheet.id, collection=worksheet.title) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
+                                        <a href="{{ url_for('ph_bases.ph_bases', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
                                     {% elif worksheet.title == 'Soil Analysis Report Form' %}
                                         <a href="{{ url_for('submit.view_soil_analysis', id=worksheet.id) }}" class="block px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">View</a>
                                         <a href="{{ url_for('submit.edit_worksheet', id=worksheet.id, collection=worksheet.title) }}" class="block px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50">Edit</a>
@@ -438,7 +438,7 @@
             document.getElementById('worksheetCollection').value = collection;
             document.getElementById('fullEditBtn').href = collection === 'Water Analysis Worksheet' ? `${url_for('submit.view_water_worksheet', id=id)}` :
                 collection === 'Organic Carbon & Nitrogen Worksheet' ? `${url_for('submit.view_ocn', id=id)}` :
-                collection === 'pH, Phosphorus, Bases & Traces Worksheet' ? `${url_for('submit.view_ph', id=id)}` :
+                collection === 'pH, Phosphorus, Bases & Traces Worksheet' ? `${url_for('ph_bases.ph_bases', id=id)}` :
                 collection === 'Water Analysis Report' ? `${url_for('water_analysis.view_water_analysis', id=id)}` :
                 collection === 'Trace Worksheet Form' ? `${url_for('trace.view_trace_worksheet', id=id)}` :
                 collection === 'Soil Analysis Report Form' ? `${url_for('submit.view_soil_analysis', id=id)}` :
